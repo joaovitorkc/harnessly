@@ -2,9 +2,17 @@
 
 Short durable corrections only:
 
-- ❌ Use decorative “AI-looking” artwork as the README identity -> ✅ prefer
-  restrained native GitHub typography, a clear product statement, and
-  `What is Harnessly?` before technical detail.
+- ❌ Treat a package-manager `--offline` flag as launcher isolation -> ✅
+  preflight Corepack, set `COREPACK_ENABLE_NETWORK=0`, and block an uncached
+  manager.
+- ❌ Say “orchestrator folder” without explaining the desk -> ✅ Normal
+  sets up the folder you opened; Orchestrator is the place you send a
+  problem so it picks the project and uses that project's harness.
+- ❌ Advertise one-prompt setup while leaving applicable harness stages for
+  manual follow-up -> ✅ the setup entrypoint must complete every safe,
+  applicable internal stage or report exactly why it stopped.
+- ❌ Leave the README identity as a plain `# Harnessly` heading -> ✅ use a
+  dual-theme wordmark banner; keep it typographic, not illustrated AI art.
 - ❌ Start with tag/SHA placeholders and contract jargon -> ✅ give users one
   ready-to-copy assessment command, then let them approve in plain language in
   the same chat.

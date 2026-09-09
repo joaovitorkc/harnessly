@@ -1,7 +1,7 @@
 schemaVersion: harnessly.dev/profile/v1
 name: ADVANCED
-version: 0.1.0
-description: Create a non-destructive orchestrator control plane for one repository or a parent multi-repository workspace.
+version: 0.2.0
+description: Create a non-destructive central Orchestrator that routes user problems to the correct registered project, its instructions, harness, and sensor.
 topologies:
   - EMBEDDED
   - PARENT_HUB
@@ -13,6 +13,8 @@ invariants:
   - EMBEDDED registers the current repository as ..
   - PARENT_HUB registers selected sibling repositories from their common parent.
   - The control plane does not become a source-code build root.
+  - A request is routed to exactly one project before project instructions are loaded.
+  - Product work uses the selected project's own entrypoint, harness, and sensor.
   - Git initialization and remote changes are outside setup.
 artifacts:
   - path: orchestrator/AGENTS.md
@@ -34,8 +36,23 @@ artifacts:
   - path: orchestrator/projects.yaml
     when: Every selected repository root is reachable by a stable relative path.
     ownership: structural-merge
-  - path: orchestrator/docs/
-    when: Cross-project routing, tasks, decisions, or policies are applicable.
+  - path: orchestrator/docs/routing/
+    when: Registered projects need a human-readable problem-to-project routing map.
+    ownership: owned-file
+  - path: orchestrator/docs/inventory/
+    when: COMPLETE setup persists workspace units, commands, and routing evidence.
+    ownership: owned-file
+  - path: orchestrator/docs/harness/
+    when: COMPLETE setup records cross-project readiness and verification evidence.
+    ownership: owned-file
+  - path: orchestrator/docs/tasks/
+    when: Cross-project work spans independently verifiable project steps.
+    ownership: owned-file
+  - path: orchestrator/docs/decisions/
+    when: A decision affects more than one registered project.
+    ownership: owned-file
+  - path: orchestrator/docs/policies/
+    when: Shared safety or routing policy applies to the whole workspace.
     ownership: owned-file
   - path: orchestrator/.agents/skills/
     when: Cross-project workflows are detected.

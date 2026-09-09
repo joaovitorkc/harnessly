@@ -1,33 +1,76 @@
 schemaVersion: harnessly.dev/eval/v1
 id: cursor-setup-standard
 workflow: setup-workspace
-workflowDigest: NOT_RUN
+workflowDigest: 8d4db6b715e9c17373d1d41005d28f499e8d43cbd6f39f6acab9d05fe2c54157
 fixture: js-ts-monorepo
-fixtureDigest: NOT_RUN
-host: Cursor
-model: not-recorded
-status: not-run
-observedAt: null
+fixtureDigest: 7e3c4ee00fbd0e8723114084a8c8fce67d29be382f472c27306c457586294260
+host: Cursor generalPurpose subagent
+model: GPT-5.6 Sol
+status: stale
+observedAt: "2026-09-09T13:03:56Z"
 mode: APPLY
-applicability: NOT_RUN
+applicability: APPLICABLE
 parameters:
+  SETUP_DEPTH: COMPLETE
   PROFILE: STANDARD
   TOPOLOGY: REPO_ROOT
+  TARGET_AGENTS: GENERIC
+  DOCS_LANGUAGE: EN
 permissions:
-  filesystem: NOT_RUN
-  network: NOT_RUN
-  commands: NOT_RUN
-beforeTreeDigest: NOT_RUN
-afterTreeDigest: NOT_RUN
-secondRunTreeDigest: NOT_RUN
-changedPaths: []
-diffEvidence: null
+  filesystem: Declared R1/R2 writes inside isolated scratch fixture
+  network: Denied; Corepack network disabled and uncached pnpm blocked
+  commands: Focused existing API test only; pnpm-backed checks blocked
+beforeTreeDigest: 7e3c4ee00fbd0e8723114084a8c8fce67d29be382f472c27306c457586294260
+afterTreeDigest: aa1a70e237f126190c1c5593b758351e778c8fe127fb591da8dc0850ebb566a8
+secondRunTreeDigest: aa1a70e237f126190c1c5593b758351e778c8fe127fb591da8dc0850ebb566a8
+changedPaths:
+  - .gitignore
+  - AGENTS.md
+  - DESIGN.md
+  - HARNESS.md
+  - docs/decisions/README.md
+  - docs/design/agent-assets.md
+  - docs/design/components.md
+  - docs/design/configuration.md
+  - docs/design/interfaces.md
+  - docs/design/rate-limiting.md
+  - docs/harness/ci.md
+  - docs/harness/dependency-integrity.md
+  - docs/harness/journeys.md
+  - docs/harness/local-run.md
+  - docs/harness/prerequisites.md
+  - docs/harness/quality-gates.md
+  - docs/harness/readiness.md
+  - docs/harness/troubleshooting.md
+  - docs/harness/verification-matrix.md
+  - docs/inventory/README.md
+  - docs/inventory/commands.md
+  - docs/inventory/runtime-map.md
+  - docs/inventory/units.md
+  - docs/inventory/unknowns.md
+  - docs/learnings.md
+  - docs/tasks/README.md
+diffEvidence: Complete safe setup wrote 26 declared paths; second reconciliation produced the same tree digest.
 invariants:
   - name: Writes stay inside allowed paths
-    state: NOT_RUN
-    evidence: No real host run has been recorded.
+    state: PASS
+    evidence: Every changed path was inside a composed manifest effect in the isolated fixture.
+  - name: Every composed stage has an explicit state
+    state: PASS
+    evidence: Six stages applied and four remained blocked by denied gates or unavailable local tooling.
+  - name: Package-manager launcher cannot download
+    state: PASS
+    evidence: COREPACK_ENABLE_NETWORK=0 was set and uncached pnpm was not invoked; no cache or download appeared.
+  - name: Readiness does not hide blockers
+    state: PASS
+    evidence: Final status was PARTIAL and readiness CONDITIONALLY_READY with four blocked criteria.
+  - name: All applicable stages complete
+    state: BLOCKED
+    evidence: Quality, CI, HTTP rate limiting, and dependency validation lacked approved gates or locally available pnpm.
   - name: Second apply is idempotent
-    state: NOT_RUN
-    evidence: No real host run has been recorded.
+    state: PASS
+    evidence: Final and second-run tree digests are identical.
 notes:
-  - Deterministic fixture and template checks do not replace this evaluation.
+  - No R3 gate was approved; CI, rate limiting, full pnpm quality baseline, and offline dependency validation remained blocked.
+  - A focused existing API test passed; the fixture does not prove deployment or browser behavior.
+  - Marked stale after setup-workspace required a verification skill in complete setup.

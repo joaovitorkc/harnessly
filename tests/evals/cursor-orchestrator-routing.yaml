@@ -1,0 +1,83 @@
+schemaVersion: harnessly.dev/eval/v1
+id: cursor-orchestrator-routing
+workflow: setup-workspace
+workflowDigest: 8d4db6b715e9c17373d1d41005d28f499e8d43cbd6f39f6acab9d05fe2c54157
+fixture: multi-repo-routing-input
+fixtureDigest: fcc1a88e3cce26f2b74dc7c8e0f9141545cd71550ba24ecc61ecebe9ba23fc7b
+host: Cursor generalPurpose subagent
+model: GPT-5.6 Sol
+status: stale
+observedAt: "2026-09-09T13:03:56Z"
+mode: APPLY
+applicability: APPLICABLE
+parameters:
+  SETUP_DEPTH: COMPLETE
+  PROFILE: ADVANCED
+  TOPOLOGY: PARENT_HUB
+  TARGET_AGENTS: GENERIC
+  DOCS_LANGUAGE: EN
+permissions:
+  filesystem: Control-plane R1/R2 writes only; multi-repository product gate denied
+  network: Denied
+  commands: Existing project sensor only when its launcher was locally available
+beforeTreeDigest: fcc1a88e3cce26f2b74dc7c8e0f9141545cd71550ba24ecc61ecebe9ba23fc7b
+afterTreeDigest: 365d0a10ef1501579139c1d262e503a8b363f77ba0a8c802988e7e5c9e99a0d6
+secondRunTreeDigest: 365d0a10ef1501579139c1d262e503a8b363f77ba0a8c802988e7e5c9e99a0d6
+changedPaths:
+  - orchestrator/AGENTS.md
+  - orchestrator/DESIGN.md
+  - orchestrator/HARNESS.md
+  - orchestrator/docs/decisions/README.md
+  - orchestrator/docs/design/agent-assets.md
+  - orchestrator/docs/design/configuration.md
+  - orchestrator/docs/harness/ci.md
+  - orchestrator/docs/harness/dependency-integrity.md
+  - orchestrator/docs/harness/journeys.md
+  - orchestrator/docs/harness/local-run.md
+  - orchestrator/docs/harness/prerequisites.md
+  - orchestrator/docs/harness/quality-gates.md
+  - orchestrator/docs/harness/readiness.md
+  - orchestrator/docs/harness/troubleshooting.md
+  - orchestrator/docs/harness/verification-matrix.md
+  - orchestrator/docs/inventory/README.md
+  - orchestrator/docs/inventory/commands.md
+  - orchestrator/docs/inventory/runtime-map.md
+  - orchestrator/docs/inventory/units.md
+  - orchestrator/docs/inventory/unknowns.md
+  - orchestrator/docs/policies/gates.md
+  - orchestrator/docs/policies/safety.md
+  - orchestrator/docs/routing/README.md
+  - orchestrator/docs/routing/observed-tests.md
+  - orchestrator/docs/routing/projects.md
+  - orchestrator/docs/tasks/README.md
+  - orchestrator/projects.yaml
+diffEvidence: Created a 27-file control plane; product fixture digests stayed unchanged and the second reconciliation wrote nothing.
+invariants:
+  - name: Registry and paths stay contained
+    state: PASS
+    evidence: Web and API resolved as independent sibling Git roots; entrypoints and harnesses stayed inside each project.
+  - name: Frontend request routes only to web
+    state: PASS
+    evidence: The web signals selected web and only its AGENTS.md and HARNESS.md were loaded.
+  - name: Python API request routes only to api
+    state: PASS
+    evidence: The API signals selected api and only its AGENTS.md and HARNESS.md were loaded.
+  - name: Ambiguous request does not load both projects
+    state: PASS
+    evidence: Authentication produced one web-or-API question with no project instruction load.
+  - name: Product repositories remain unchanged
+    state: PASS
+    evidence: Product tree digests matched their fixture inputs and no source was copied into orchestrator.
+  - name: All applicable project stages complete
+    state: BLOCKED
+    evidence: The explicit multi-repository product-write gate was denied.
+  - name: Existing project sensors pass
+    state: FAIL
+    evidence: Web declared npm test but had no test script; API python launcher was unavailable and remained blocked.
+  - name: Second apply is idempotent
+    state: PASS
+    evidence: Final and second-run tree digests are identical.
+notes:
+  - Final status was PARTIAL and readiness NOT_READY with eight passing, one failing, and one blocked criterion.
+  - No dependency install, network, product write, Git mutation, or source copy occurred.
+  - Marked stale after setup-workspace required a verification skill in complete setup.

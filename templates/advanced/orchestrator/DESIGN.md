@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=document-system-design version=0.1.0 -->
 # Design — {{WORKSPACE_NAME}} orchestrator
 
 ## Purpose
@@ -17,6 +17,19 @@ registered repositories without owning or duplicating their product code.
 The machine-readable source is `projects.yaml`.
 
 {{PROJECT_SUMMARY}}
+
+## Routing flow
+
+```mermaid
+flowchart LR
+    U[User problem] --> R[Orchestrator routing]
+    R --> P[Selected project]
+    P --> A[Project AGENTS.md]
+    A --> H[Project HARNESS.md]
+    H --> S[Project sensor]
+```
+
+Routing chooses context; it does not move code or run as a background service.
 
 ## Ownership
 

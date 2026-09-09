@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=document-system-design version=0.1.0 -->
 # Design — {{PROJECT_NAME}}
 
 ## Purpose

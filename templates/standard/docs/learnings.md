@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=setup-workspace version=1.0.0-beta.1 -->
 # Learned rules
 
 Keep only durable corrections that should influence future work.

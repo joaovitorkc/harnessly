@@ -3,7 +3,7 @@
 All notable Harnessly changes are documented here. Workflow behavior follows
 semantic versioning rules described in [`docs/versioning.md`](./docs/versioning.md).
 
-## 0.1.0-beta.1 — Unreleased
+## 0.1.0-beta.2 — Unreleased
 
 ### Added
 
@@ -15,6 +15,10 @@ semantic versioning rules described in [`docs/versioning.md`](./docs/versioning.
   and release-archive validation.
 - English and Portuguese entry documentation.
 - Apache-2.0/CC BY 4.0 file-scoped licensing and generated-output exception.
+- Complete one-prompt setup composition from inventory through readiness.
+- Orchestrator routing records for problem-to-project delegation through each
+  project's entrypoint, harness, and sensor.
+- Composition locks and complete-setup result ledgers tied to readiness.
 
 ### Security
 
@@ -24,3 +28,5 @@ semantic versioning rules described in [`docs/versioning.md`](./docs/versioning.
 - Human gates for dangerous local actions; external and Git mutations blocked.
 - Path/symlink containment, source-patch preimages, result/gate semantics, and
   clean-revision publication checks.
+- Realpath containment for routed entrypoints/harnesses and network-disabled
+  Corepack preflight for restricted verification.

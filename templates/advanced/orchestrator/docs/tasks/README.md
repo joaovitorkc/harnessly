@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=setup-workspace version=1.0.0-beta.1 -->
 # Cross-project tasks
 
 Use one folder per task. Record objective, affected repositories, explicit

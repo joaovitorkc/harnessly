@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=build-local-harness version=0.1.0 -->
 # Harness — {{PROJECT_NAME}}
 
 ## Prerequisites

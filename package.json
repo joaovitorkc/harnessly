@@ -1,6 +1,6 @@
 {
   "name": "harnessly",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "private": true,
   "description": "Portable, verifiable workflows that make repositories agent-ready.",
   "type": "module",

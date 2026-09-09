@@ -1,21 +1,27 @@
 import { mkdir, rm, symlink } from "node:fs/promises";
+import { execFile } from "node:child_process";
 import path from "node:path";
+import { promisify } from "node:util";
 import Ajv2020 from "ajv/dist/2020.js";
+import { assertSetupResultSemantics } from "./result-semantics.mjs";
 import {
   assert,
   assertPublishableProvenance,
   assertSafePath,
   isAllowedWritePattern,
+  pathExists,
   readText,
   readYaml,
   resetDirectory,
   rootDir,
   validateReleaseName,
   validateSourceRevision,
+  walk,
   writeStable,
 } from "./lib.mjs";
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
+const execFileAsync = promisify(execFile);
 const compile = async (name) =>
   ajv.compile(
     JSON.parse(await readText(path.join(rootDir, `contracts/v1/${name}`))),
@@ -66,6 +72,13 @@ expectInvalid(validatePrompt, gitObjectEffect, "effect into Git internals");
 const mutatingAssess = structuredClone(prompt);
 mutatingAssess.capabilities.assess.push("fs.write-declared");
 expectInvalid(validatePrompt, mutatingAssess, "mutating ASSESS capability");
+
+const duplicateComposition = structuredClone(prompt);
+duplicateComposition.composes.push(duplicateComposition.composes[0]);
+expectInvalid(validatePrompt, duplicateComposition, "duplicate composed stage");
+const unlockedComposition = structuredClone(prompt);
+delete unlockedComposition.compositionLock;
+expectInvalid(validatePrompt, unlockedComposition, "composition without lock");
 
 const executeWithoutCommand = structuredClone(prompt);
 executeWithoutCommand.effects[0] = {
@@ -163,6 +176,143 @@ const emptyApplied = {
 };
 expectInvalid(validateResult, emptyApplied, "empty APPLIED result");
 
+const completedStages = Object.fromEntries(
+  prompt.composes.map((stage) => [
+    stage,
+    {
+      applicability: "APPLICABLE",
+      state: "APPLIED",
+      evidence: "Synthetic current evidence",
+      checks: [
+        {
+          name: "Synthetic stage check",
+          state: "PASS",
+          evidence: "Synthetic pass",
+        },
+      ],
+      gates: {},
+    },
+  ]),
+);
+const completeApplied = {
+  ...result,
+  version: prompt.version,
+  mode: "APPLY",
+  applicability: "APPLICABLE",
+  status: "APPLIED",
+  evidence: [
+    { claim: "Synthetic evidence", source: "fixture", confidence: "high" },
+  ],
+  changes: [
+    { path: "AGENTS.md", action: "created", reason: "Synthetic setup" },
+  ],
+  gates: {},
+  checks: [{ name: "Synthetic", state: "PASS", evidence: "Synthetic pass" }],
+  unverified: [],
+  residualRisks: [],
+  details: {
+    setupDepth: "COMPLETE",
+    stages: completedStages,
+    readiness: {
+      grade: "READY",
+      counts: {
+        PASS: 1,
+        FAIL: 0,
+        NOT_RUN: 0,
+        BLOCKED: 0,
+        "N/A": 0,
+        STALE: 0,
+      },
+      mandatoryCriteria: [
+        {
+          name: "Synthetic readiness",
+          state: "PASS",
+          evidence: "Synthetic pass",
+        },
+      ],
+    },
+  },
+};
+assert(validateResult(completeApplied), "valid complete setup result rejected");
+assertSetupResultSemantics(completeApplied, prompt.composes);
+const approvedDependencyGate = {
+  risk: "R3",
+  state: "approved",
+  action: "Install a synthetic quality dependency",
+  target: "package.json",
+  preconditions: ["Exact version selected"],
+  impact: "Changes dependency graph",
+  rollback: "Restore manifest and lockfile",
+  verification: "Run locked restore and project sensor",
+  authorizationEvidence: "Synthetic current-session approval",
+};
+const completeAppliedWithGate = structuredClone(completeApplied);
+completeAppliedWithGate.gates["quality-dependency"] = approvedDependencyGate;
+completeAppliedWithGate.details.stages["establish-quality-gates"].gates[
+  "quality-dependency"
+] = approvedDependencyGate;
+assert(
+  validateResult(completeAppliedWithGate),
+  "valid completed stage with approved R3 gate rejected",
+);
+assertSetupResultSemantics(completeAppliedWithGate, prompt.composes);
+const mismatchedReadinessCounts = structuredClone(completeApplied);
+mismatchedReadinessCounts.details.readiness.counts.PASS = 2;
+expectThrow(
+  () => assertSetupResultSemantics(mismatchedReadinessCounts, prompt.composes),
+  "readiness count mismatch",
+);
+const danglingStageGate = structuredClone(completeAppliedWithGate);
+delete danglingStageGate.gates["quality-dependency"];
+expectThrow(
+  () => assertSetupResultSemantics(danglingStageGate, prompt.composes),
+  "dangling stage gate",
+);
+const missingComposedStage = structuredClone(completeApplied);
+delete missingComposedStage.details.stages["wire-ci-verification"];
+expectInvalid(
+  validateResult,
+  missingComposedStage,
+  "complete setup missing composed stage",
+);
+const falseReadyApplied = structuredClone(completeApplied);
+falseReadyApplied.details.stages["establish-quality-gates"].state = "BLOCKED";
+expectInvalid(
+  validateResult,
+  falseReadyApplied,
+  "APPLIED setup with blocked child stage",
+);
+const contradictoryReadyStage = structuredClone(completeApplied);
+contradictoryReadyStage.details.stages["wire-ci-verification"] = {
+  applicability: "BLOCKED",
+  state: "N/A",
+  evidence: "Contradictory synthetic stage",
+  checks: [
+    {
+      name: "Synthetic failure",
+      state: "FAIL",
+      evidence: "Synthetic failure",
+    },
+  ],
+  gates: {
+    "missing-gate": {
+      risk: "R3",
+      state: "pending",
+      action: "Synthetic pending gate",
+      target: "fixture",
+      preconditions: ["Synthetic precondition"],
+      impact: "Synthetic impact",
+      rollback: "Synthetic rollback",
+      verification: "Synthetic verification",
+    },
+  },
+};
+expectInvalid(
+  validateResult,
+  contradictoryReadyStage,
+  "APPLIED setup with contradictory false-green stage",
+);
+
 const deniedGateApplied = {
   ...emptyApplied,
   evidence: [
@@ -205,23 +355,76 @@ const embeddedRegistry = {
   workspace: "fixture",
   topology: "EMBEDDED",
   authorizedRoot: "..",
-  projects: [{ id: "escape", path: "../other", gitRoot: true }],
+  routingDoc: "docs/routing/projects.md",
+  projects: [
+    {
+      id: "escape",
+      name: "Escape",
+      role: "Synthetic project",
+      path: "../other",
+      gitRoot: true,
+      signals: ["escape"],
+      exclusions: [],
+      entrypoint: "AGENTS.md",
+      harness: "HARNESS.md",
+      sensor: "node --test",
+    },
+  ],
 };
 expectInvalid(validateProjects, embeddedRegistry, "escaped embedded project");
 
 const parentRegistry = {
   ...embeddedRegistry,
   topology: "PARENT_HUB",
-  projects: [{ id: "escape", path: "../../outside", gitRoot: true }],
+  projects: [
+    {
+      ...embeddedRegistry.projects[0],
+      path: "../../outside",
+    },
+  ],
 };
 expectInvalid(validateProjects, parentRegistry, "parent project traversal");
 expectInvalid(
   validateProjects,
   {
     ...parentRegistry,
-    projects: [{ id: "git-internals", path: "../.git", gitRoot: true }],
+    projects: [
+      {
+        ...embeddedRegistry.projects[0],
+        id: "git-internals",
+        path: "../.git",
+      },
+    ],
   },
   "project path into Git internals",
+);
+expectInvalid(
+  validateProjects,
+  {
+    ...embeddedRegistry,
+    projects: [
+      {
+        ...embeddedRegistry.projects[0],
+        path: "..",
+        entrypoint: "../outside.md",
+      },
+    ],
+  },
+  "project entrypoint traversal",
+);
+expectInvalid(
+  validateProjects,
+  {
+    ...embeddedRegistry,
+    projects: [
+      {
+        ...embeddedRegistry.projects[0],
+        path: "..",
+        harness: ".git/config",
+      },
+    ],
+  },
+  "project harness into Git internals",
 );
 
 const unpublishedRelease = {
@@ -348,6 +551,69 @@ await expectReject(
 await expectReject(
   () => assertSafePath(safetyRoot, path.join(safetyRoot, "escaped", "file.txt")),
   "symlink path containment",
+);
+
+const isolatedCorepackHome = path.join(safetyRoot, "corepack-home");
+await mkdir(isolatedCorepackHome, { recursive: true });
+await execFileAsync("corepack", ["--version"], { timeout: 5_000 });
+await expectReject(
+  () =>
+    execFileAsync("corepack", ["pnpm", "--version"], {
+      cwd: rootDir,
+      env: {
+        ...process.env,
+        HOME: safetyRoot,
+        XDG_CACHE_HOME: path.join(safetyRoot, "xdg-cache"),
+        COREPACK_HOME: isolatedCorepackHome,
+        COREPACK_ENABLE_NETWORK: "0",
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
+      },
+      timeout: 5_000,
+    }),
+  "real Corepack with empty cache and disabled network",
+);
+assert(
+  (await walk(isolatedCorepackHome)).length === 0,
+  "network-disabled Corepack populated its isolated manager cache",
+);
+
+const fakeCorepack = path.join(safetyRoot, "fake-corepack.mjs");
+const downloadCanary = path.join(safetyRoot, "corepack-download-canary");
+await writeStable(
+  fakeCorepack,
+  [
+    'import { writeFileSync } from "node:fs";',
+    'if (process.env.COREPACK_ENABLE_NETWORK === "0") process.exit(42);',
+    "writeFileSync(process.argv[2], 'simulated download');",
+    "",
+  ].join("\n"),
+  safetyRoot,
+);
+await expectReject(
+  () =>
+    execFileAsync(process.execPath, [fakeCorepack, downloadCanary], {
+      env: {
+        ...process.env,
+        COREPACK_ENABLE_NETWORK: "0",
+      },
+      timeout: 5_000,
+    }),
+  "Corepack network-disabled guard",
+);
+assert(
+  !(await pathExists(downloadCanary)),
+  "network-disabled Corepack guard created a download canary",
+);
+await execFileAsync(process.execPath, [fakeCorepack, downloadCanary], {
+  env: {
+    ...process.env,
+    COREPACK_ENABLE_NETWORK: "1",
+  },
+  timeout: 5_000,
+});
+assert(
+  await pathExists(downloadCanary),
+  "Corepack guard canary could not detect a simulated download",
 );
 
 await assertSafePath(rootDir, safetyRoot);

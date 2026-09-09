@@ -6,7 +6,11 @@
 
 <div align="center">
 
-# Harnessly
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-banner-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/github-banner-light.png">
+  <img src="./assets/github-banner-light.png" alt="Harnessly" width="100%">
+</picture>
 
 ### Turn an existing repository into a place where coding agents can work without guessing.
 
@@ -31,7 +35,7 @@ to prepare**, copy this message, and send it:
 
 ```text
 Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Analyze this project and show me the setup you recommend. Do not change anything yet.
+Analyze this project and show me the complete internal setup: instructions, design, skills, sensors, and everything else that applies. Do not change anything yet.
 ```
 
 Harnessly maps the project and explains the plan. If it looks right, reply in
@@ -45,11 +49,32 @@ That is the normal flow. You do not need to replace a placeholder, understand
 a commit SHA, or paste the URL again. The agent reuses the exact workflow it
 already assessed.
 
-Want an `orchestrator/` for several repositories? Change only the second line:
+### Normal setup
+
+One repository. You open the coding agent in that folder. After apply, the
+setup lives there: `AGENTS.md`, `DESIGN.md`, `HARNESS.md`, inventory, skills,
+sensor scripts, quality gates, and the rest that the project actually needs.
+
+Later you keep working in that same folder. The agent already has the map.
+
+### Orchestrator setup
+
+Several projects. Harnessly creates an `orchestrator/` folder that becomes the
+desk: you open the agent there and just describe the problem. It identifies
+which registered project the request belongs to, loads that project's
+`AGENTS.md` and `HARNESS.md`, works inside that repository, and uses that
+project's own sensor to check the result.
+
+Same operating pattern as a multi-product hub: one place to send the problem,
+then the chosen project already knows how to solve it. The Orchestrator keeps
+routing, plans, and references. It does not copy source code and it is not a
+background service.
+
+To choose it, change only the second line:
 
 ```text
 Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-I want the advanced setup with an orchestrator folder. Analyze first and do not change anything yet.
+I want the Orchestrator setup: a central folder where I describe a problem, it picks the right project, and that project already has its own instructions, design, skills, and sensors. Analyze first and do not change anything yet.
 ```
 
 If your agent cannot open URLs, open or paste the local
@@ -82,9 +107,16 @@ agents. You give a workflow to the agent you already use; Harnessly gives that
 agent a repeatable way to inspect the repository, explain what is missing, and
 make only the changes you approve.
 
-The result is a project-specific **harness**: the small set of instructions,
-system docs, package maps, quality gates, local checks, and safety boundaries
-that helps an agent work with the project instead of improvising around it.
+The initial setup prompt composes the whole applicable catalog in one
+conversation. It does not stop after three index files. The default is the
+complete internal setup: every relevant stage runs, then an evidence-backed
+readiness grade. Anything unsafe, irrelevant, or unresolved stays visible as
+gated, `N/A`, or `BLOCKED`.
+
+The result is a project-specific **harness** — the same kind of engineering
+layer used to keep several products coherent: instructions, design, skills,
+sensors, and checks adapted to *this* repository. It is not a copy of another
+company's product rules.
 
 Harnessly does not force a framework or assume every repository needs the same
 setup. It follows evidence. A monorepo can receive scoped package guidance; a
@@ -108,26 +140,34 @@ verifiable workflows.
 
 ## What it adds
 
-Harnessly can create the pieces that are missing and preserve the ones you
-already have:
+One approved apply of the initial prompt, by default, installs the applicable
+internal setup — not a thin starter. Typical files:
 
-- a clear project entrypoint for coding agents;
-- system design and decision docs;
-- package, command, and repository maps;
-- local verification commands and quality gates;
-- safe Cursor, Claude Code, and Copilot adapters;
-- focused checks for CI, dependencies, configuration, and HTTP rate limits.
+- `AGENTS.md` — how the agent starts, boundaries, and the verify command;
+- `DESIGN.md` and `docs/design/` — how the system actually works;
+- `HARNESS.md`, `docs/harness/`, and `scripts/verify-*` — local journeys and
+  the canonical sensor;
+- `.agents/skills/` — at least a verification skill, plus skills for
+  workflows the repo already repeats;
+- `docs/inventory/`, `docs/tasks/`, `docs/decisions/`, `docs/learnings.md`;
+- thin Cursor, Claude Code, and Copilot adapters when those hosts are in use;
+- verification-only CI when a local sensor already exists and pins are safe;
+- HTTP rate limiting only when there is an owned server endpoint.
 
-It adapts to the real stack. A static landing page does not receive server
-middleware, and an unfamiliar tool is reported instead of guessed.
+It creates what is missing and preserves what you already have. A static
+landing page does not receive server middleware. An unfamiliar tool is
+reported, not guessed. Extra product-specific skills (a unique screen
+workflow, a custom deploy ritual) appear only when the repository already
+shows that work; the prompt will not invent them.
 
 ## The two choices, in plain English
 
 - **Look only** (`ASSESS`): inspect and explain; never edit.
 - **Apply** (`APPLY`): make only the approved local changes, then verify.
 - **Normal setup** (`STANDARD`): keep guidance next to the code.
-- **Advanced setup** (`ADVANCED`): add an `orchestrator/` that points to
-  existing repositories without copying or moving them.
+- **Orchestrator setup** (`ADVANCED`): add a central routing layer that points
+  to existing repositories, selects the right project for each problem, and
+  loads that project's own harness without copying or moving code.
 
 You can ignore the words in parentheses during the normal two-message flow.
 They exist for automation and repeatable runs.
@@ -150,7 +190,7 @@ preset, or project generator. For pinned releases and integrity details, see
 
 | ID | Workflow | Purpose |
 |----|----------|---------|
-| HLY-001 | [`setup-workspace`](./docs/prompts/setup-workspace.md) | Install the right Standard or Advanced foundation |
+| HLY-001 | [`setup-workspace`](./docs/prompts/setup-workspace.md) | Complete the applicable Standard or Orchestrator setup in one conversation |
 | HLY-002 | [`inventory-workspace`](./docs/prompts/inventory-workspace.md) | Map repos, packages, stacks, commands, and boundaries |
 | HLY-003 | [`govern-agent-assets`](./docs/prompts/govern-agent-assets.md) | Reconcile AGENTS, rules, skills, and native adapters |
 | HLY-004 | [`document-system-design`](./docs/prompts/document-system-design.md) | Build evidence-backed design and architecture docs |

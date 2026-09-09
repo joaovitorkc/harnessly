@@ -2,10 +2,25 @@ schemaVersion: harnessly.dev/projects/v1
 workspace: synthetic-multi-repo
 topology: PARENT_HUB
 authorizedRoot: ..
+routingDoc: docs/routing/projects.md
 projects:
   - id: web
+    name: Web
+    role: Synthetic browser application
     path: ../repos/web
     gitRoot: true
+    signals: [web, frontend, browser]
+    exclusions: [api, backend]
+    entrypoint: AGENTS.md
+    harness: HARNESS.md
+    sensor: npm test
   - id: api
+    name: API
+    role: Synthetic Python API
     path: ../repos/api
     gitRoot: true
+    signals: [api, backend, python]
+    exclusions: [frontend, browser]
+    entrypoint: AGENTS.md
+    harness: HARNESS.md
+    sensor: python -m pytest

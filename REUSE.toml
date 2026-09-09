@@ -21,6 +21,7 @@ SPDX-License-Identifier = "Apache-2.0"
 [[annotations]]
 path = [
   "*.md",
+  "assets/**",
   "docs/**",
   "prompts/**",
   "profiles/**",

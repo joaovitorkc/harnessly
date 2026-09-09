@@ -33,6 +33,7 @@ toolkit. It has no login, tenant, web/API service, database, or runtime ports.
 - Prompt text is canonical and English; entry docs may be English/Portuguese.
 - Every catalog item has one manifest, one `PROMPT.md`, and one separate guide.
 - Every workflow supports `ASSESS` and `APPLY`; missing mode means `ASSESS`.
+- `setup-workspace` defaults to complete composition and ends with readiness.
 - `ASSESS` must not mutate filesystem, Git, dependencies, or external systems.
 - `APPLY` grants only declared local R1/R2 effects.
 - Git writes, production, secrets, migrations, infrastructure, and external
@@ -41,6 +42,8 @@ toolkit. It has no login, tenant, web/API service, database, or runtime ports.
 - Unknown capability is `BLOCKED`; proven absence is `N/A`.
 - A static/client-only target is `N/A` for HTTP rate limiting.
 - Advanced setup never copies or moves product code.
+- Advanced routes a problem to one registered project before loading that
+  project's instructions and harness.
 - Adapters are generated from portable canonical assets.
 - A passing validator is not proof that an LLM will behave identically.
 

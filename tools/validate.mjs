@@ -1,6 +1,7 @@
 import { lstat, realpath } from "node:fs/promises";
 import path from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
+import { assertSetupResultSemantics } from "./result-semantics.mjs";
 import {
   assert,
   digestTree,
@@ -74,6 +75,12 @@ await check("result example", async () => {
     path.join(rootDir, "contracts/v1/examples/result.yaml"),
   );
   assert(validateResult(example), schemaMessage(validateResult));
+  assertSetupResultSemantics(
+    example,
+    catalog.workflows
+      .filter((workflow) => workflow.slug !== "setup-workspace")
+      .map((workflow) => workflow.slug),
+  );
   const gateIds = Object.keys(example.gates);
   assert(
     new Set(gateIds).size === gateIds.length,
@@ -101,6 +108,7 @@ const structuredPathPattern =
 const catalogIds = [];
 const catalogSlugs = [];
 const manifests = new Map();
+const manifestDigests = new Map();
 
 for (const workflow of catalog.workflows) {
   const label = workflow.slug;
@@ -211,6 +219,7 @@ for (const workflow of catalog.workflows) {
     const guidePath = path.resolve(promptDirectory, manifest.guide);
     assert(await pathExists(guidePath), `missing guide ${relativePath(guidePath)}`);
     manifests.set(manifest.slug, manifest);
+    manifestDigests.set(manifest.slug, sha256(await readText(manifestPath)));
   });
 
   await check(`${label} prompt`, async () => {
@@ -290,8 +299,10 @@ for (const workflow of catalog.workflows) {
     );
     if (manifest.effects.some((effect) => effect.operation === "execute")) {
       assert(
-        content.includes("shell.verify"),
-        "execute effect lacks the restricted shell.verify envelope",
+        content.includes("shell.verify") &&
+          content.includes("COREPACK_ENABLE_NETWORK=0") &&
+          /uncached manager/i.test(content),
+        "execute effect lacks shell.verify or package-manager launcher containment",
       );
     }
     if (manifest.effects.some((effect) => effect.operation === "network-read")) {
@@ -345,10 +356,96 @@ await check("catalog identity", async () => {
 
 await check("workflow dependencies", async () => {
   const known = new Set(catalogSlugs);
+  const riskRank = { R0: 0, R1: 1, R2: 2, R3: 3, R4: 4 };
   for (const [slug, manifest] of manifests) {
     for (const dependency of manifest.requires) {
       assert(known.has(dependency), `${slug} requires unknown ${dependency}`);
       assert(dependency !== slug, `${slug} cannot require itself`);
+    }
+    const completedStages = new Set(manifest.requires);
+    if (manifest.composes?.length) {
+      const lockedStages = manifest.compositionLock.stages;
+      assert(
+        JSON.stringify(lockedStages.map((stage) => stage.slug)) ===
+          JSON.stringify(manifest.composes),
+        `${slug} composition lock order differs from composes`,
+      );
+      assert(
+        manifest.compositionLock.terminal === manifest.composes.at(-1),
+        `${slug} composition terminal must be the final stage`,
+      );
+      if (slug === "setup-workspace") {
+        assert(
+          manifest.compositionLock.terminal === "verify-repository-readiness",
+          "setup-workspace must terminate with readiness verification",
+        );
+        assert(
+          JSON.stringify(resultSchema.$defs.setupStages.required) ===
+            JSON.stringify(manifest.composes),
+          "setup result stage schema differs from composition order",
+        );
+      }
+      const parentPrompt = await readText(
+        path.join(rootDir, `prompts/${slug}/PROMPT.md`),
+      );
+      for (const gate of manifest.compositionGates ?? []) {
+        assert(
+          parentPrompt.replace(/\s+/g, " ").includes(gate.description),
+          `${slug} prompt omits composition gate ${gate.id}`,
+        );
+      }
+      if (slug === "setup-workspace") {
+        assert(
+          manifest.compositionGates?.some(
+            (gate) => gate.condition === "MULTIPLE_GIT_ROOT_WRITES",
+          ),
+          "setup-workspace must gate multi-Git-root writes",
+        );
+      }
+      for (const lockedStage of lockedStages) {
+        const child = manifests.get(lockedStage.slug);
+        assert(
+          child.version === lockedStage.version,
+          `${slug} locks the wrong ${lockedStage.slug} version`,
+        );
+        assert(
+          manifestDigests.get(lockedStage.slug) ===
+            lockedStage.manifestSha256,
+          `${slug} composition digest is stale for ${lockedStage.slug}`,
+        );
+        assert(
+          parentPrompt.includes(
+            `${lockedStage.slug}@${lockedStage.version} manifest-sha256:${lockedStage.manifestSha256}`,
+          ),
+          `${slug} prompt omits composition lock for ${lockedStage.slug}`,
+        );
+      }
+    }
+    for (const childSlug of manifest.composes ?? []) {
+      assert(known.has(childSlug), `${slug} composes unknown ${childSlug}`);
+      assert(childSlug !== slug, `${slug} cannot compose itself`);
+      const child = manifests.get(childSlug);
+      assert(
+        !(child.composes?.length),
+        `${slug} cannot compose nested composition ${childSlug}`,
+      );
+      for (const dependency of child.requires) {
+        assert(
+          completedStages.has(dependency),
+          `${slug} composes ${childSlug} before required ${dependency}`,
+        );
+      }
+      for (const capability of child.capabilities.apply) {
+        assert(
+          manifest.capabilities.apply.includes(capability),
+          `${slug} must declare composed capability ${capability}`,
+        );
+      }
+      assert(
+        riskRank[manifest.risk.ceiling] >= riskRank[child.risk.ceiling],
+        `${slug} risk ceiling is below composed ${childSlug}`,
+      );
+      completedStages.add(childSlug);
     }
   }
 
@@ -390,9 +487,14 @@ await check("workflow scenarios", async () => {
       new Set(caseIds).size === caseIds.length,
       `${slug}: scenario case IDs must be unique`,
     );
-    const declaredPaths = manifests
-      .get(slug)
-      .effects.flatMap((effect) => effect.paths);
+    const manifest = manifests.get(slug);
+    const effectiveManifests = [
+      manifest,
+      ...(manifest.composes ?? []).map((child) => manifests.get(child)),
+    ];
+    const declaredPaths = effectiveManifests.flatMap((current) =>
+      current.effects.flatMap((effect) => effect.paths),
+    );
     for (const testCase of scenario.cases) {
       assert(
         fixtureIds.has(testCase.fixture),
@@ -540,7 +642,10 @@ for (const profileName of ["standard", "advanced"]) {
             "DESIGN.md",
             "HARNESS.md",
             "docs/design/",
+            "docs/inventory/",
             "docs/harness/",
+            "scripts/verify-*",
+            ".github/workflows/verify.yml",
             "docs/decisions/",
             "docs/tasks/",
             "docs/learnings.md",
@@ -552,7 +657,12 @@ for (const profileName of ["standard", "advanced"]) {
             "orchestrator/DESIGN.md",
             "orchestrator/HARNESS.md",
             "orchestrator/projects.yaml",
-            "orchestrator/docs/",
+            "orchestrator/docs/routing/",
+            "orchestrator/docs/inventory/",
+            "orchestrator/docs/harness/",
+            "orchestrator/docs/tasks/",
+            "orchestrator/docs/decisions/",
+            "orchestrator/docs/policies/",
             "orchestrator/.agents/skills/",
           ];
     assert(
@@ -589,6 +699,14 @@ await check("project registries", async () => {
     const boundary = await realpath(
       path.resolve(registryDirectory, registry.authorizedRoot),
     );
+    const routingDocument = path.resolve(
+      registryDirectory,
+      registry.routingDoc,
+    );
+    assert(
+      await pathExists(routingDocument),
+      `${relativePath(filePath)} routing document is missing`,
+    );
     for (const project of registry.projects) {
       const unresolved = path.resolve(registryDirectory, project.path);
       assert(
@@ -608,6 +726,20 @@ await check("project registries", async () => {
             (await pathExists(fixtureMarker))),
         `${relativePath(filePath)} project ${project.id} has no Git-root marker`,
       );
+      for (const field of ["entrypoint", "harness"]) {
+        const referencedPath = path.resolve(resolved, project[field]);
+        assert(
+          await pathExists(referencedPath),
+          `${relativePath(filePath)} project ${project.id} ${field} is missing`,
+        );
+        const resolvedReference = await realpath(referencedPath);
+        const referencedRelative = path.relative(resolved, resolvedReference);
+        assert(
+          referencedRelative !== ".." &&
+            !referencedRelative.startsWith(`..${path.sep}`),
+          `${relativePath(filePath)} project ${project.id} ${field} escapes its root`,
+        );
+      }
     }
   }
 });

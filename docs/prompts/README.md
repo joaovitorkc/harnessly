@@ -3,11 +3,11 @@
 ## Not sure where to start?
 
 Use [`setup-workspace`](./setup-workspace.md). It maps the whole project and
-recommends only the next steps that fit.
+then runs every safe applicable setup stage in the same conversation.
 
 ```text
 Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Analyze this project and show me the setup you recommend. Do not change anything yet.
+Analyze this project and show me the complete internal setup: instructions, design, skills, sensors, and everything else that applies. Do not change anything yet.
 ```
 
 When the plan looks right, say “apply the plan you just showed me” in the same
@@ -40,10 +40,10 @@ placeholder.
 Open the guide, then use its executable prompt with “analyze first and do not
 change anything yet.” Approve in the same chat only after reading the plan.
 
-## Full hardening sequence
+## What the initial prompt runs
 
-You usually do not need to run this by hand; setup can recommend it. When a
-larger project needs the full sequence:
+You do not need to run this list by hand. With `SETUP_DEPTH=COMPLETE`, the
+initial prompt composes it internally:
 
 1. [`setup-workspace`](./setup-workspace.md)
 2. [`inventory-workspace`](./inventory-workspace.md)
@@ -61,9 +61,10 @@ larger project needs the full sequence:
    server-side HTTP ingress.
 7. [`verify-repository-readiness`](./verify-repository-readiness.md)
 
-`requires` means that apply needs current evidence, not that every earlier
-workflow must have run. If evidence is missing, the workflow stops and explains
-what it needs.
+Each row keeps its own applicability, gates, writes, and verification. A
+focused workflow can still run alone later for maintenance. `requires` means
+that apply needs current evidence; an earlier composed stage may create that
+evidence during the same setup.
 
 ## How the files are organized
 

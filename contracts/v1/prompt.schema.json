@@ -322,6 +322,75 @@
         ]
       }
     },
+    "composes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "compositionLock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["terminal", "stages"],
+      "properties": {
+        "terminal": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["slug", "version", "manifestSha256"],
+            "properties": {
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
+              },
+              "manifestSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "compositionGates": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "risk", "condition", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "risk": {
+            "const": "R3"
+          },
+          "condition": {
+            "enum": ["MULTIPLE_GIT_ROOT_WRITES"]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 12
+          }
+        }
+      }
+    },
     "requires": {
       "type": "array",
       "uniqueItems": true,
@@ -353,6 +422,16 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["composes"]
+      },
+      "then": {
+        "required": ["compositionLock"]
+      }
+    }
+  ],
   "$defs": {
     "parameter": {
       "type": "object",

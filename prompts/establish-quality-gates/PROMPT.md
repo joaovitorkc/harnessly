@@ -45,6 +45,8 @@ the local harness. Do not infer installed tools from global binaries.
 - Run project commands only inside the restricted `shell.verify` envelope:
   inspect transitive scripts, scrub credentials, deny network when enforceable,
   bound writes to declared ignored/temp paths, set a timeout, and stop children.
+  Resolve package-manager launchers first; for Corepack set
+  `COREPACK_ENABLE_NETWORK=0` and block an uncached manager.
 
 ## Discovery
 

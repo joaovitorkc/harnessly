@@ -118,6 +118,302 @@
         "confidence": { "enum": ["high", "medium", "low"] }
       }
     },
+    "setupStage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applicability",
+        "state",
+        "evidence",
+        "checks",
+        "gates"
+      ],
+      "properties": {
+        "applicability": {
+          "enum": ["APPLICABLE", "N/A", "BLOCKED"]
+        },
+        "state": {
+          "enum": [
+            "ASSESSED",
+            "APPLIED",
+            "NO_CHANGE",
+            "N/A",
+            "BLOCKED",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "state", "evidence"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "state": {
+                "enum": ["PASS", "FAIL", "NOT_RUN", "BLOCKED", "N/A", "STALE"]
+              },
+              "evidence": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "gates": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/gate"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "applicability": { "const": "N/A" }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": { "const": "N/A" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "applicability": { "const": "BLOCKED" }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": { "const": "BLOCKED" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": ["APPLIED", "NO_CHANGE", "PARTIAL", "FAILED"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "applicability": { "const": "APPLICABLE" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": { "const": "N/A" }
+            }
+          },
+          "then": {
+            "properties": {
+              "applicability": { "const": "N/A" }
+            }
+          }
+        }
+      ]
+    },
+    "setupStages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inventory-workspace",
+        "govern-agent-assets",
+        "document-system-design",
+        "document-runtime-configuration",
+        "build-local-harness",
+        "establish-quality-gates",
+        "wire-ci-verification",
+        "harden-http-rate-limits",
+        "audit-dependency-integrity",
+        "verify-repository-readiness"
+      ],
+      "properties": {
+        "inventory-workspace": { "$ref": "#/$defs/setupStage" },
+        "govern-agent-assets": { "$ref": "#/$defs/setupStage" },
+        "document-system-design": { "$ref": "#/$defs/setupStage" },
+        "document-runtime-configuration": { "$ref": "#/$defs/setupStage" },
+        "build-local-harness": { "$ref": "#/$defs/setupStage" },
+        "establish-quality-gates": { "$ref": "#/$defs/setupStage" },
+        "wire-ci-verification": { "$ref": "#/$defs/setupStage" },
+        "harden-http-rate-limits": { "$ref": "#/$defs/setupStage" },
+        "audit-dependency-integrity": { "$ref": "#/$defs/setupStage" },
+        "verify-repository-readiness": { "$ref": "#/$defs/setupStage" }
+      }
+    },
+    "completedSetupStage": {
+      "allOf": [
+        { "$ref": "#/$defs/setupStage" },
+        {
+          "properties": {
+            "state": {
+              "enum": ["APPLIED", "NO_CHANGE", "N/A"]
+            },
+            "checks": {
+              "items": {
+                "properties": {
+                  "state": {
+                    "enum": ["PASS", "N/A"]
+                  }
+                }
+              }
+            },
+            "gates": {
+              "additionalProperties": {
+                "properties": {
+                  "state": {
+                    "enum": ["not-needed", "approved"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grade", "counts", "mandatoryCriteria"],
+      "properties": {
+        "grade": {
+          "enum": ["READY", "CONDITIONALLY_READY", "NOT_READY"]
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["PASS", "FAIL", "NOT_RUN", "BLOCKED", "N/A", "STALE"],
+          "properties": {
+            "PASS": { "type": "integer", "minimum": 0 },
+            "FAIL": { "type": "integer", "minimum": 0 },
+            "NOT_RUN": { "type": "integer", "minimum": 0 },
+            "BLOCKED": { "type": "integer", "minimum": 0 },
+            "N/A": { "type": "integer", "minimum": 0 },
+            "STALE": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "mandatoryCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "state", "evidence"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "state": {
+                "enum": ["PASS", "FAIL", "NOT_RUN", "BLOCKED", "N/A", "STALE"]
+              },
+              "evidence": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "grade": { "const": "READY" }
+            }
+          },
+          "then": {
+            "properties": {
+              "counts": {
+                "properties": {
+                  "FAIL": { "const": 0 },
+                  "NOT_RUN": { "const": 0 },
+                  "BLOCKED": { "const": 0 },
+                  "STALE": { "const": 0 }
+                }
+              },
+              "mandatoryCriteria": {
+                "items": {
+                  "properties": {
+                    "state": { "enum": ["PASS", "N/A"] }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "grade": { "const": "NOT_READY" }
+            }
+          },
+          "then": {
+            "properties": {
+              "counts": {
+                "properties": {
+                  "FAIL": { "minimum": 1 }
+                }
+              },
+              "mandatoryCriteria": {
+                "contains": {
+                  "properties": {
+                    "state": { "const": "FAIL" }
+                  },
+                  "required": ["state"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "grade": { "const": "CONDITIONALLY_READY" }
+            }
+          },
+          "then": {
+            "properties": {
+              "counts": {
+                "properties": {
+                  "FAIL": { "const": 0 }
+                },
+                "anyOf": [
+                  { "properties": { "NOT_RUN": { "minimum": 1 } } },
+                  { "properties": { "BLOCKED": { "minimum": 1 } } },
+                  { "properties": { "STALE": { "minimum": 1 } } }
+                ]
+              },
+              "mandatoryCriteria": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "state": { "const": "FAIL" }
+                    },
+                    "required": ["state"]
+                  }
+                },
+                "contains": {
+                  "properties": {
+                    "state": {
+                      "enum": ["NOT_RUN", "BLOCKED", "STALE"]
+                    }
+                  },
+                  "required": ["state"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "gate": {
       "type": "object",
       "additionalProperties": false,
@@ -193,6 +489,135 @@
     }
   },
   "allOf": [
+    {
+      "if": {
+        "required": ["workflow"],
+        "properties": {
+          "workflow": { "const": "setup-workspace" }
+        }
+      },
+      "then": {
+        "required": ["profile", "topology", "details"],
+        "properties": {
+          "details": {
+            "required": ["setupDepth"],
+            "properties": {
+              "setupDepth": {
+                "enum": ["COMPLETE", "FOUNDATION"]
+              },
+              "stages": {
+                "$ref": "#/$defs/setupStages"
+              },
+              "readiness": {
+                "$ref": "#/$defs/readiness"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "required": ["setupDepth"],
+                  "properties": {
+                    "setupDepth": { "const": "COMPLETE" }
+                  }
+                },
+                "then": {
+                  "required": ["stages"]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["workflow", "mode", "details"],
+        "properties": {
+          "workflow": { "const": "setup-workspace" },
+          "mode": { "const": "APPLY" },
+          "details": {
+            "required": ["setupDepth"],
+            "properties": {
+              "setupDepth": { "const": "COMPLETE" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "required": ["readiness"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["workflow", "status"],
+        "properties": {
+          "workflow": { "const": "setup-workspace" },
+          "status": { "const": "APPLIED" }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "required": ["setupDepth", "stages", "readiness"],
+            "properties": {
+              "setupDepth": { "const": "COMPLETE" },
+              "stages": {
+                "type": "object",
+                "properties": {
+                  "inventory-workspace": { "$ref": "#/$defs/completedSetupStage" },
+                  "govern-agent-assets": { "$ref": "#/$defs/completedSetupStage" },
+                  "document-system-design": { "$ref": "#/$defs/completedSetupStage" },
+                  "document-runtime-configuration": { "$ref": "#/$defs/completedSetupStage" },
+                  "build-local-harness": { "$ref": "#/$defs/completedSetupStage" },
+                  "establish-quality-gates": { "$ref": "#/$defs/completedSetupStage" },
+                  "wire-ci-verification": { "$ref": "#/$defs/completedSetupStage" },
+                  "harden-http-rate-limits": { "$ref": "#/$defs/completedSetupStage" },
+                  "audit-dependency-integrity": { "$ref": "#/$defs/completedSetupStage" },
+                  "verify-repository-readiness": { "$ref": "#/$defs/completedSetupStage" }
+                }
+              },
+              "readiness": {
+                "properties": {
+                  "grade": { "const": "READY" },
+                  "mandatoryCriteria": {
+                    "items": {
+                      "properties": {
+                        "state": { "enum": ["PASS", "N/A"] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["workflow", "details"],
+        "properties": {
+          "workflow": { "const": "setup-workspace" },
+          "details": {
+            "required": ["setupDepth"],
+            "properties": {
+              "setupDepth": { "const": "FOUNDATION" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": ["ASSESSED", "NO_CHANGE", "BLOCKED", "PARTIAL", "FAILED"]
+          }
+        }
+      }
+    },
     {
       "if": {
         "properties": {

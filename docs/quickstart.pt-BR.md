@@ -17,7 +17,7 @@ projeto.
 
 ```text
 Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
+Analise este projeto e me mostre o setup interno completo: instruções, design, skills, sensores e o resto que se aplicar. Não altere nada ainda.
 ```
 
 Essa primeira passada só olha. A IA mapeia repositórios, pacotes, comandos,
@@ -37,13 +37,24 @@ Pode aplicar o plano que você acabou de me mostrar. Valide o resultado e diga o
 Continue no mesmo chat para a IA reutilizar exatamente o workflow que já leu.
 Não cole a URL outra vez para aplicar.
 
-## Quer a organização avançada?
+O padrão é fazer todo o setup aplicável. O mesmo prompt passa por inventário,
+documentação, instruções, skills, harness local, sensores, gates de qualidade,
+configuração, CI/segurança e prontidão. Etapa que não serve retorna `N/A`;
+etapa sem decisão segura retorna `BLOCKED`, nunca é escondida.
 
-Use esta primeira mensagem:
+## Quer o Orchestrator?
+
+**Normal:** a IA está aberta em um repo; o setup fica nessa pasta.
+
+**Orchestrator:** vários projetos. O Harnessly cria `orchestrator/`. Você
+abre a IA ali e manda o problema. Ele escolhe o projeto registrado, carrega
+as instruções e o harness dele, trabalha lá e roda o sensor daquele projeto.
+
+Use esta primeira mensagem para criar:
 
 ```text
 Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
+Quero o setup Orchestrator: uma central onde eu mando o problema, ele identifica o projeto e resolve com as instruções, o design, as skills e os sensores daquele projeto. Primeiro analise e não altere nada ainda.
 ```
 
 O setup avançado aponta para os repositórios existentes. Não copia nem move
@@ -74,7 +85,7 @@ Se o projeto for um site estático sem endpoint de servidor, o retorno correto
 - **Aplicar (`APPLY`)** é “fazer as mudanças locais aprovadas e validar”.
 - **Normal (`STANDARD`)** mantém a orientação perto do código.
 - **Avançado (`ADVANCED`)** adiciona um `orchestrator/` para vários repos.
-- **Tag** é um nome amigável de versão, como `v0.1.0-beta.1`.
+- **Tag** é um nome amigável de versão, como `v0.1.0-beta.2`.
 - **SHA do commit** é a impressão digital exata de uma versão do repositório.
 
 No caminho normal você não precisa digitar tag nem SHA: a URL já está pronta e

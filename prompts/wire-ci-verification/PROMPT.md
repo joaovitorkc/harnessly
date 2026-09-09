@@ -47,6 +47,8 @@ canonical local sensor, repository hosting evidence, and path ownership.
 - Run the local project sensor only inside the restricted `shell.verify`
   envelope: inspect transitive scripts, scrub credentials, deny network when
   enforceable, bound writes, set a timeout, and stop children.
+  Resolve package-manager launchers first; for Corepack set
+  `COREPACK_ENABLE_NETWORK=0` and block an uncached manager.
 
 ## Discovery
 

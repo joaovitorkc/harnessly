@@ -1,4 +1,4 @@
-<!-- harnessly:owned workflow=setup-workspace version=0.1.0 -->
+<!-- harnessly:owned workflow=setup-workspace version=1.0.0-beta.1 -->
 # AGENTS.md — {{PROJECT_NAME}}
 
 {{PROJECT_SUMMARY}}
@@ -36,6 +36,7 @@ Report checks that were not run. Never call `NOT_RUN` a pass.
 
 - Architecture: `DESIGN.md`
 - Local verification: `HARNESS.md`
+- Portable skills: `.agents/skills/`
 - Decisions: `docs/decisions/`
 - Tasks: `docs/tasks/`
 - Short corrections: `docs/learnings.md`

@@ -1,10 +1,10 @@
 schemaVersion: harnessly.dev/catalog/v1
-release: 0.1.0-beta.1
+release: 0.1.0-beta.2
 contract: v1
 workflows:
   - id: HLY-001
     slug: setup-workspace
-    version: 0.1.0
+    version: 1.0.0-beta.1
     status: beta
     category: setup
     manifest: prompts/setup-workspace/manifest.yaml

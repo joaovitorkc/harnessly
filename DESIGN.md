@@ -28,6 +28,11 @@ flowchart LR
 `MODE` determines authority. `PROFILE` determines setup placement. A host's
 available tools do not grant permission.
 
+`setup-workspace` is the complete bootstrap entrypoint. Its manifest composes
+the focused catalog in dependency order; its self-contained prompt embeds the
+stage procedures and finishes with repository readiness. Focused workflows
+remain independently usable for later maintenance.
+
 ## Canonical versus generated
 
 - `contracts/v1/` defines common semantics and schemas.
@@ -55,8 +60,21 @@ Creates a control plane named `orchestrator/`.
 - Parent-hub topology registers explicit sibling Git roots.
 
 The control plane owns routing, cross-project plans, decisions, policies, and
-sensor references. Product repos retain source and product-specific docs.
-Physical migration is excluded.
+sensor references. A user starts there with a problem; routing selects exactly
+one registered project, then loads that project's entrypoint and harness before
+source work.
+
+```mermaid
+flowchart LR
+    U[User problem] --> O[Orchestrator]
+    O --> R[Project registry and routing map]
+    R --> A[Selected project AGENTS.md]
+    A --> H[Selected project HARNESS.md]
+    H --> V[Project sensor]
+```
+
+Product repos retain source and product-specific docs. Physical migration is
+excluded. The Orchestrator is a Markdown control plane, not a runtime.
 
 ## Trust boundaries
 

@@ -3,7 +3,7 @@
 ## v0.1 — foundation
 
 - Portable execution contract and risk model.
-- Standard and Advanced setup.
+- Complete one-prompt Standard setup and Advanced Orchestrator routing.
 - Eleven discovery, documentation, harness, quality, and security workflows.
 - Deterministic schemas, adapters, fixtures, scenarios, and release digests.
 - Honest compatibility evidence.

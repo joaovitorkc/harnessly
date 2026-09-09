@@ -73,13 +73,15 @@ Harnessly v0.1 starts conservative. Documentation compatibility does not become
 
 | Host | Documented discovery surface | Workflow observation |
 |------|------------------------------|----------------------|
-| Cursor | `AGENTS.md`, `.cursor/rules/`, `.agents/skills/` | [`not-run`](../tests/evals/cursor-setup-standard.yaml) |
+| Cursor | `AGENTS.md`, `.cursor/rules/`, `.agents/skills/` | [`partial` Standard](../tests/evals/cursor-setup-standard.yaml); [`partial` Orchestrator](../tests/evals/cursor-orchestrator-routing.yaml) |
 | Claude Code | `CLAUDE.md`, `.claude/skills/`, `.claude/agents/` | [`not-run`](../tests/evals/claude-advanced-embedded.yaml) |
 | GitHub Copilot | `AGENTS.md`, repository instructions, Agent Skills, supported agents/prompts | [`not-run`](../tests/evals/copilot-rate-limit-na.yaml) |
 | Generic Markdown-capable agent | Pasted or local `PROMPT.md` | `not-run` |
 
 “Documented discovery surface” means the vendor/open specification describes
 the file location. It does not mean a Harnessly workflow has passed there.
+The Cursor observations kept denied gates and fixture failures visible, so
+they are evidence of controlled partial behavior rather than green readiness.
 
 ## Known limitations
 

@@ -46,6 +46,8 @@ policies. Never print tokens or read user/global package-manager credentials.
 - Run offline validators only inside the restricted `shell.verify` envelope:
   inspect transitive scripts, scrub credentials, deny network, suppress
   lifecycle hooks, bound writes, set a timeout, and stop children.
+  Resolve package-manager launchers first; for Corepack set
+  `COREPACK_ENABLE_NETWORK=0` and block an uncached manager.
 
 ## Discovery
 

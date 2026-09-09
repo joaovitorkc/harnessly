@@ -61,3 +61,12 @@ fixtures:
         - repos/api/pyproject.toml
         - repos/web/package.json
       rateLimit: N/A
+  - id: multi-repo-routing-input
+    root: tests/fixtures/multi-repo-routing-input
+    expected:
+      ecosystems: [javascript-typescript, python]
+      packageManagers: [npm, uv]
+      manifests:
+        - api/pyproject.toml
+        - web/package.json
+      rateLimit: N/A

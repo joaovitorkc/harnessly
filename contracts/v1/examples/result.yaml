@@ -1,5 +1,5 @@
 workflow: setup-workspace
-version: 0.1.0
+version: 1.0.0-beta.1
 mode: ASSESS
 profile: STANDARD
 topology: REPO_ROOT
@@ -27,3 +27,5 @@ unverified:
 residualRisks:
   - A coding-agent host may not enforce Markdown instructions.
 nextCommand: Rerun with MODE=APPLY after reviewing the proposed paths.
+details:
+  setupDepth: FOUNDATION

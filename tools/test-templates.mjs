@@ -42,6 +42,9 @@ async function validateRegistryObject(registry, registryDirectory) {
   const boundary = await realpath(
     path.resolve(registryDirectory, registry.authorizedRoot),
   );
+  const routingDocument = path.resolve(registryDirectory, registry.routingDoc);
+  await assertSafePath(registryDirectory, routingDocument);
+  assert(await pathExists(routingDocument), "registry routing document is missing");
   for (const project of registry.projects) {
     const unresolved = path.resolve(registryDirectory, project.path);
     assert(await pathExists(unresolved), `${project.id}: project path is missing`);
@@ -55,6 +58,20 @@ async function validateRegistryObject(registry, registryDirectory) {
       await pathExists(path.join(resolved, ".fixture-git-root")),
       `${project.id}: expected Git-root marker is missing`,
     );
+    for (const field of ["entrypoint", "harness"]) {
+      const referencedPath = path.resolve(resolved, project[field]);
+      assert(
+        await pathExists(referencedPath),
+        `${project.id}: ${field} is missing`,
+      );
+      const resolvedReference = await realpath(referencedPath);
+      const referencedRelative = path.relative(resolved, resolvedReference);
+      assert(
+        referencedRelative !== ".." &&
+          !referencedRelative.startsWith(`..${path.sep}`),
+        `${project.id}: ${field} escapes the project root`,
+      );
+    }
   }
 }
 
@@ -82,6 +99,22 @@ function replaceTokens(content, values, fileLabel) {
   return rendered;
 }
 
+function hasExpectedProvenance(content, relativePath) {
+  const fileName = path.basename(relativePath);
+  const owner =
+    fileName === "DESIGN.md"
+      ? ["document-system-design", "0.1.0"]
+      : fileName === "HARNESS.md"
+        ? ["build-local-harness", "0.1.0"]
+        : ["setup-workspace", "1.0.0-beta.1"];
+  const marker = relativePath.endsWith(".yaml")
+    ? `# harnessly:owned workflow=${owner[0]} version=${owner[1]}`
+    : `<!-- harnessly:owned workflow=${owner[0]} version=${owner[1]} -->`;
+  return fileName === "SKILL.md"
+    ? content.includes(marker)
+    : content.startsWith(marker);
+}
+
 async function assessTemplateTargets(sourceRoot, targetRoot) {
   const assessed = new Map();
   for (const sourcePath of await walk(sourceRoot)) {
@@ -104,9 +137,7 @@ async function renderTree(sourceRoot, targetRoot, values, assessed) {
     const relative = path.relative(sourceRoot, sourcePath);
     const sourceContent = await readText(sourcePath);
     assert(
-      /^(?:<!--|#) harnessly:owned workflow=setup-workspace version=0\.1\.0/.test(
-        sourceContent,
-      ),
+      hasExpectedProvenance(sourceContent, relative),
       `${relative}: missing stable ownership provenance`,
     );
     const targetPath = path.join(targetRoot, relative);
@@ -120,9 +151,7 @@ async function renderTree(sourceRoot, targetRoot, values, assessed) {
     );
     if (currentContent !== null) {
       assert(
-        /^(?:<!--|#) harnessly:owned workflow=setup-workspace version=0\.1\.0/.test(
-          currentContent,
-        ),
+        hasExpectedProvenance(currentContent, relative),
         `${relative}: unmanaged collision`,
       );
     }
@@ -262,6 +291,22 @@ await writeStable(
   "synthetic embedded Git boundary",
   temporaryRoot,
 );
+await writeStable(
+  path.join(embeddedWorkspace, "AGENTS.md"),
+  "# Embedded project instructions\n",
+  temporaryRoot,
+);
+await writeStable(
+  path.join(embeddedWorkspace, "HARNESS.md"),
+  "# Embedded project harness\n",
+  temporaryRoot,
+);
+const embeddedEntrypointDigest = sha256(
+  await readText(path.join(embeddedWorkspace, "AGENTS.md")),
+);
+const embeddedHarnessDigest = sha256(
+  await readText(path.join(embeddedWorkspace, "HARNESS.md")),
+);
 const embeddedTarget = path.join(embeddedWorkspace, "orchestrator");
 await assertConverges(advancedSource, embeddedTarget, {
   WORKSPACE_NAME: "Embedded Fixture",
@@ -269,10 +314,14 @@ await assertConverges(advancedSource, embeddedTarget, {
   TOPOLOGY_DESCRIPTION:
     "The control plane is inside the product repository and points to its parent.",
   PROJECT_REGISTRY:
-    "  - id: host-project\n    path: ..\n    gitRoot: true",
+    "  - id: host-project\n    name: Host Project\n    role: Synthetic embedded application\n    path: ..\n    gitRoot: true\n    signals: [host, application]\n    exclusions: [external]\n    entrypoint: AGENTS.md\n    harness: HARNESS.md\n    sensor: node --test",
   PROJECT_SUMMARY: "- Host project: `..`",
   DECISIONS_AND_UNKNOWNS: "- Physical migration is excluded.",
   PROJECT_SENSORS: "- Host project: run its documented sensor.",
+  ROUTING_PROJECTS:
+    "## Host Project (`host-project`)\n\n- Role: synthetic embedded application\n- Signals: `host`, `application`\n- Exclusions: `external`\n- Entrypoint: `../AGENTS.md`\n- Harness: `../HARNESS.md`\n- Sensor hint: `node --test`",
+  ROUTING_TESTS:
+    `## Host application request\n\n- Request: \`change the host application\`\n- Matched signals: \`host\`, \`application\`\n- Exclusions considered: \`external\`\n- Selected project: \`host-project\`\n- Entrypoint SHA-256: \`${embeddedEntrypointDigest}\`\n- Harness SHA-256: \`${embeddedHarnessDigest}\`\n- Result: \`PASS\``,
 });
 
 const embeddedRegistry = await readYaml(
@@ -283,6 +332,11 @@ assert(
   embeddedRegistry.projects.length === 1 &&
     embeddedRegistry.projects[0].path === "..",
   "Embedded registry must point to ..",
+);
+assert(
+  (await readText(path.join(embeddedTarget, "docs/routing/observed-tests.md")))
+    .includes("Exclusions considered: `external`"),
+  "Embedded routing evidence must record exclusions",
 );
 
 const parentWorkspace = path.join(temporaryRoot, "parent");
@@ -295,7 +349,29 @@ for (const projectId of ["web", "api"]) {
     `synthetic ${projectId} Git boundary`,
     temporaryRoot,
   );
+  await writeStable(
+    path.join(projectRoot, "AGENTS.md"),
+    `# ${projectId} project instructions\n`,
+    temporaryRoot,
+  );
+  await writeStable(
+    path.join(projectRoot, "HARNESS.md"),
+    `# ${projectId} project harness\n`,
+    temporaryRoot,
+  );
 }
+const webEntrypointDigest = sha256(
+  await readText(path.join(parentWorkspace, "repos/web/AGENTS.md")),
+);
+const webHarnessDigest = sha256(
+  await readText(path.join(parentWorkspace, "repos/web/HARNESS.md")),
+);
+const apiEntrypointDigest = sha256(
+  await readText(path.join(parentWorkspace, "repos/api/AGENTS.md")),
+);
+const apiHarnessDigest = sha256(
+  await readText(path.join(parentWorkspace, "repos/api/HARNESS.md")),
+);
 const parentTarget = path.join(parentWorkspace, "orchestrator");
 await assertConverges(advancedSource, parentTarget, {
   WORKSPACE_NAME: "Parent Hub Fixture",
@@ -303,10 +379,14 @@ await assertConverges(advancedSource, parentTarget, {
   TOPOLOGY_DESCRIPTION:
     "The control plane references selected sibling repositories.",
   PROJECT_REGISTRY:
-    "  - id: web\n    path: ../repos/web\n    gitRoot: true\n  - id: api\n    path: ../repos/api\n    gitRoot: true",
+    "  - id: web\n    name: Web\n    role: Synthetic browser application\n    path: ../repos/web\n    gitRoot: true\n    signals: [web, frontend]\n    exclusions: [api]\n    entrypoint: AGENTS.md\n    harness: HARNESS.md\n    sensor: pnpm verify\n  - id: api\n    name: API\n    role: Synthetic HTTP service\n    path: ../repos/api\n    gitRoot: true\n    signals: [api, backend]\n    exclusions: [frontend]\n    entrypoint: AGENTS.md\n    harness: HARNESS.md\n    sensor: pnpm verify",
   PROJECT_SUMMARY: "- Web: `../repos/web`\n- API: `../repos/api`",
   DECISIONS_AND_UNKNOWNS: "- Repositories remain independent.",
   PROJECT_SENSORS: "- Web: project sensor\n- API: project sensor",
+  ROUTING_PROJECTS:
+    "## Web (`web`)\n\n- Role: synthetic browser application\n- Signals: `web`, `frontend`\n- Exclusions: `api`\n- Entrypoint: `../../repos/web/AGENTS.md`\n- Harness: `../../repos/web/HARNESS.md`\n- Sensor hint: `pnpm verify`\n\n## API (`api`)\n\n- Role: synthetic HTTP service\n- Signals: `api`, `backend`\n- Exclusions: `frontend`\n- Entrypoint: `../../repos/api/AGENTS.md`\n- Harness: `../../repos/api/HARNESS.md`\n- Sensor hint: `pnpm verify`",
+  ROUTING_TESTS:
+    `## Frontend request\n\n- Request: \`fix the frontend page\`\n- Matched signals: \`web\`, \`frontend\`\n- Exclusions considered: \`api\`\n- Selected project: \`web\`\n- Entrypoint SHA-256: \`${webEntrypointDigest}\`\n- Harness SHA-256: \`${webHarnessDigest}\`\n- Result: \`PASS\`\n\n## API request\n\n- Request: \`change the API endpoint\`\n- Matched signals: \`api\`, \`backend\`\n- Exclusions considered: \`frontend\`\n- Selected project: \`api\`\n- Entrypoint SHA-256: \`${apiEntrypointDigest}\`\n- Harness SHA-256: \`${apiHarnessDigest}\`\n- Result: \`PASS\`\n\n## Ambiguous request\n\n- Request: \`change authentication\`\n- Question: \`Is this for web or API?\`\n- Loaded projects: none\n- Result: \`BLOCKED\``,
 });
 
 const parentRegistry = await readYaml(path.join(parentTarget, "projects.yaml"));
@@ -315,6 +395,39 @@ assert(
   parentRegistry.projects.map((project) => project.path).join(",") ===
     "../repos/web,../repos/api",
   "Parent registry must contain only selected sibling paths",
+);
+assert(
+  parentRegistry.projects.every(
+    (project) =>
+      project.signals.length > 0 &&
+      project.entrypoint === "AGENTS.md" &&
+      project.harness === "HARNESS.md",
+  ),
+  "Parent registry must contain usable routing metadata",
+);
+const routingMap = await readText(
+  path.join(parentTarget, "docs/routing/projects.md"),
+);
+assert(
+  routingMap.includes("## Web (`web`)") &&
+    routingMap.includes("## API (`api`)"),
+  "Advanced routing map must include every registered project",
+);
+const routingTests = await readText(
+  path.join(parentTarget, "docs/routing/observed-tests.md"),
+);
+assert(
+  routingTests.includes("Selected project: `web`") &&
+    routingTests.includes("Selected project: `api`") &&
+    routingTests.includes(`Entrypoint SHA-256: \`${webEntrypointDigest}\``) &&
+    routingTests.includes(`Harness SHA-256: \`${webHarnessDigest}\``) &&
+    routingTests.includes(`Entrypoint SHA-256: \`${apiEntrypointDigest}\``) &&
+    routingTests.includes(`Harness SHA-256: \`${apiHarnessDigest}\``) &&
+    routingTests.includes("Exclusions considered: `api`") &&
+    routingTests.includes("Exclusions considered: `frontend`") &&
+    routingTests.includes("Loaded projects: none") &&
+    routingTests.includes("Result: `BLOCKED`"),
+  "Advanced routing tests must cover every project and one ambiguity",
 );
 
 await expectFailure(
@@ -356,7 +469,12 @@ await expectFailure(
       {
         ...parentRegistry,
         projects: [
-          { id: "missing", path: "../repos/missing", gitRoot: true },
+          {
+            ...parentRegistry.projects[0],
+            id: "missing",
+            name: "Missing",
+            path: "../repos/missing",
+          },
         ],
       },
       parentTarget,
@@ -371,6 +489,38 @@ await writeStable(
   "synthetic escaped Git boundary",
   temporaryRoot,
 );
+const escapedReferenceTarget = path.join(outsideRoot, "outside.md");
+await writeStable(
+  escapedReferenceTarget,
+  "synthetic path outside the registered project",
+  temporaryRoot,
+);
+for (const [field, fileName] of [
+  ["entrypoint", "escaped-entrypoint.md"],
+  ["harness", "escaped-harness.md"],
+]) {
+  await symlink(
+    escapedReferenceTarget,
+    path.join(parentWorkspace, "repos", "web", fileName),
+  );
+  await expectFailure(
+    () =>
+      validateRegistryObject(
+        {
+          ...parentRegistry,
+          projects: [
+            {
+              ...parentRegistry.projects[0],
+              [field]: fileName,
+            },
+            parentRegistry.projects[1],
+          ],
+        },
+        parentTarget,
+      ),
+    `symlink ${field} escape`,
+  );
+}
 const escapedLink = path.join(parentWorkspace, "repos", "escaped");
 await symlink(outsideRoot, escapedLink, "dir");
 await expectFailure(
@@ -379,7 +529,12 @@ await expectFailure(
       {
         ...parentRegistry,
         projects: [
-          { id: "escaped", path: "../repos/escaped", gitRoot: true },
+          {
+            ...parentRegistry.projects[0],
+            id: "escaped",
+            name: "Escaped",
+            path: "../repos/escaped",
+          },
         ],
       },
       parentTarget,

@@ -104,7 +104,10 @@ For `STRATEGY=CANONICALIZE`:
 2. move long procedures conceptually into new portable skills, but do not
    delete their old copies; mark migration recommendations;
 3. create canonical skills under `.agents/skills/` following the open
-   `SKILL.md` format with concise trigger descriptions;
+   `SKILL.md` format with concise trigger descriptions. When a software unit
+   or canonical sensor exists, include a verification skill. Additional
+   skills require an evidenced repeatable workflow; do not invent
+   product-domain skills;
 4. generate selected host adapters that point to or reproduce the canonical
    semantics without extra authority;
 5. keep Cursor rules path/relevance scoped;

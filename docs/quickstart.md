@@ -17,7 +17,7 @@ Harnessly repository.
 
 ```text
 Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Analyze this project and show me the setup you recommend. Do not change anything yet.
+Analyze this project and show me the complete internal setup: instructions, design, skills, sensors, and everything else that applies. Do not change anything yet.
 ```
 
 The first pass is read-only. The agent maps the repositories, packages,
@@ -36,13 +36,25 @@ Apply the plan you just showed me. Verify the result and tell me what you could 
 Stay in the same chat so the agent reuses the exact workflow it already read.
 Do not paste the URL again for apply.
 
-## Want the advanced layout?
+The default is a complete applicable setup. The same prompt works through
+inventory, docs, agent assets, skills, local harness, sensors, quality gates,
+configuration, CI/security stages, and readiness. A stage that does not fit is
+`N/A`; a stage missing a safe decision is `BLOCKED`, never silently skipped.
 
-Use this first message instead:
+## Want the Orchestrator?
+
+**Normal:** the agent is open in one repo; setup stays in that folder.
+
+**Orchestrator:** several projects. Harnessly creates `orchestrator/`. You
+open the agent there and describe the problem. It picks the registered
+project, loads that project's instructions and harness, works there, and runs
+that project's sensor.
+
+Use this first message to create it:
 
 ```text
 Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-I want the advanced setup with an orchestrator folder. Analyze first and do not change anything yet.
+I want the Orchestrator setup: a central folder where I describe a problem, it picks the right project, and that project already has its own instructions, design, skills, and sensors. Analyze first and do not change anything yet.
 ```
 
 The advanced layout points to existing repositories. It never copies or moves
@@ -73,7 +85,7 @@ If the project is a static site with no server endpoint, the honest result is
 - **Apply (`APPLY`)** means “perform the approved local changes and verify.”
 - **Standard (`STANDARD`)** keeps guidance close to the code.
 - **Advanced (`ADVANCED`)** adds an `orchestrator/` for several repositories.
-- A **tag** is a friendly release name such as `v0.1.0-beta.1`.
+- A **tag** is a friendly release name such as `v0.1.0-beta.2`.
 - A **commit SHA** is the exact fingerprint of one repository snapshot.
 
 You do not need to type a tag or SHA in the normal flow: the release URL is

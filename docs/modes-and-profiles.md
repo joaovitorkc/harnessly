@@ -1,6 +1,6 @@
-# Modes and profiles
+# Modes, setup depth, and profiles
 
-Harnessly exposes two independent controls.
+Harnessly keeps permission, completeness, and organization independent.
 
 ## `MODE`
 
@@ -36,13 +36,18 @@ v0.1.
 
 ### `STANDARD`
 
-Instructions and docs live at the repository root and, when necessary, at
-package roots. The nearest scoped instruction wins. Harnessly does not create
-an orchestrator.
+This is the normal setup. Start the agent inside one repository and Harnessly
+creates the applicable instructions, docs, skills, harness, sensors, and gates
+there. Package-specific guidance stays at the nearest package root. Harnessly
+does not create an orchestrator.
 
 ### `ADVANCED`
 
-Harnessly creates a control-plane directory named `orchestrator/`.
+Harnessly creates a central control-plane directory named `orchestrator/`.
+Open the coding agent there and describe the problem. The Orchestrator matches
+the request to one registered project's role, signals, and exclusions, then
+loads that project's `AGENTS.md` and `HARNESS.md` before work begins. The
+project keeps its source and owns its final verification.
 
 - `TOPOLOGY=EMBEDDED`: it lives inside the current repository and registers
   that repository as `..`.
@@ -52,6 +57,16 @@ Harnessly creates a control-plane directory named `orchestrator/`.
 
 The profile never copies, moves, vendors, or nests source repositories.
 
+The Orchestrator is Markdown routing and project memory, not a background
+service or agent runtime.
+
+## `SETUP_DEPTH`
+
+- `COMPLETE` is the default. The initial prompt runs every safe applicable
+  stage from inventory through readiness and reports blocked stages honestly.
+- `FOUNDATION` installs only outer entrypoints and indexes. Its result is
+  explicitly partial and must not be presented as a complete setup.
+
 ## Examples
 
 Read-only standard discovery:
@@ -60,10 +75,10 @@ Read-only standard discovery:
 MODE=ASSESS PROFILE=STANDARD
 ```
 
-Apply an embedded advanced control plane:
+Apply a complete embedded Orchestrator:
 
 ```text
-MODE=APPLY PROFILE=ADVANCED TOPOLOGY=EMBEDDED
+MODE=APPLY SETUP_DEPTH=COMPLETE PROFILE=ADVANCED TOPOLOGY=EMBEDDED
 ```
 
 Apply does not authorize Git initialization, remote changes, or moving repos.

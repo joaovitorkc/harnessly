@@ -1,10 +1,10 @@
 schemaVersion: harnessly.dev/prompt/v1
 id: HLY-001
 slug: setup-workspace
-version: 0.1.0
+version: 1.0.0-beta.1
 status: beta
 title: Set up an agent-ready workspace
-summary: Discover a repository or parent workspace and install only the applicable Standard or Advanced harness artifacts.
+summary: Map a repository or workspace and complete every safe, applicable harness stage through one self-contained Standard or Orchestrator setup.
 category: setup
 entrypoint: PROMPT.md
 guide: ../../docs/prompts/setup-workspace.md
@@ -14,6 +14,12 @@ modes:
     - ASSESS
     - APPLY
 parameters:
+  - name: SETUP_DEPTH
+    type: enum
+    required: false
+    default: COMPLETE
+    values: [COMPLETE, FOUNDATION]
+    description: Run the complete applicable catalog or only the basic foundation.
   - name: PROFILE
     type: enum
     required: false
@@ -49,11 +55,11 @@ applicability:
     - The target contains no software, infrastructure, documentation, or managed configuration units.
 capabilities:
   assess: [fs.read, git.read, format.parse, shell.readonly]
-  apply: [fs.read, git.read, format.parse, shell.readonly, fs.write-declared, shell.verify]
+  apply: [fs.read, git.read, format.parse, shell.readonly, fs.write-declared, shell.verify, network.public-read, dependency.modify, ci.modify]
 risk:
   assess: R0
   apply: R2
-  ceiling: R3
+  ceiling: R4
 effects:
   - operation: create
     paths:
@@ -119,12 +125,8 @@ effects:
       - AGENTS.md
       - "**/AGENTS.md"
       - CLAUDE.md
-      - DESIGN.md
-      - HARNESS.md
       - orchestrator/AGENTS.md
       - orchestrator/CLAUDE.md
-      - orchestrator/DESIGN.md
-      - orchestrator/HARNESS.md
     conditions:
       - The destination has the matching setup-workspace provenance marker and unchanged assessed digest.
     ownership: owned-file
@@ -140,12 +142,65 @@ effects:
       - The command satisfies the restricted shell.verify execution envelope.
     ownership: none
     authorization: MODE_APPLY
+composes:
+  - inventory-workspace
+  - govern-agent-assets
+  - document-system-design
+  - document-runtime-configuration
+  - build-local-harness
+  - establish-quality-gates
+  - wire-ci-verification
+  - harden-http-rate-limits
+  - audit-dependency-integrity
+  - verify-repository-readiness
+compositionLock:
+  terminal: verify-repository-readiness
+  stages:
+    - slug: inventory-workspace
+      version: 0.1.0
+      manifestSha256: 48fb227565e3898fa9e5e3398324b3ee872e68ca38259172203c0e643eb8aedf
+    - slug: govern-agent-assets
+      version: 0.1.0
+      manifestSha256: c9135951fb864fbb3f3307d1995a69ccfb38bdb35189fe29397974e957e09960
+    - slug: document-system-design
+      version: 0.1.0
+      manifestSha256: e9e3456440cf619b1e7ac54cda45ff7716c737f312c5e2489523904575ac6ec6
+    - slug: document-runtime-configuration
+      version: 0.1.0
+      manifestSha256: 2c0b549bf1141ea97107c3798c0bce3c87b28194e6e8cceeb5a0a1e866585116
+    - slug: build-local-harness
+      version: 0.1.0
+      manifestSha256: bdecdc3039653c746b511d2d76ce6d54ec752c9b6cd69549910d43676a4383af
+    - slug: establish-quality-gates
+      version: 0.1.0
+      manifestSha256: cdf2ee3873391c19807cb3d81e6cf2bf210d3cd426fc3e160f92ab9dfa34af2c
+    - slug: wire-ci-verification
+      version: 0.1.0
+      manifestSha256: 35e474026bec1c4050318add79d72f478b28011527e8e7030611e59176667b11
+    - slug: harden-http-rate-limits
+      version: 0.1.0
+      manifestSha256: 084e96bdb8baaa7e063d8898e9843b759cf12e8cdaa1e3efb49cd6fff7fe91f9
+    - slug: audit-dependency-integrity
+      version: 0.1.0
+      manifestSha256: 6232c22552b9f85469a454a96e4cfbdf6ae23d0affe592975d514c6820a4dd6c
+    - slug: verify-repository-readiness
+      version: 0.1.0
+      manifestSha256: d30ed65e7b6ab50fb2a07bac08cb424658817351525ef1b17dab7b8c20f07423
+compositionGates:
+  - id: multi-repository-writes
+    risk: R3
+    condition: MULTIPLE_GIT_ROOT_WRITES
+    description: Changing more than one independent Git root requires an exact human gate before any child effect writes outside the first root.
 requires: []
 verification:
   - All registered paths resolve inside the authorized workspace.
   - No product source or repository is copied, moved, or nested.
   - Existing unmanaged instructions are preserved.
   - A second deterministic setup produces no additional managed changes.
+  - COMPLETE setup records every composed stage as applied, N/A, blocked, or failed.
+  - COMPLETE setup ends with a reproducible readiness grade instead of assuming completion.
+  - Package-manager launchers cannot download tooling during restricted verification.
+  - Advanced routing checks record one selected project or one focused ambiguity without loading unrelated instructions.
   - Assessment returns a plain-language next message without tag or SHA placeholders.
 compatibility:
   portableCore: markdown

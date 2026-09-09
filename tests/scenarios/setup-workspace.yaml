@@ -6,18 +6,44 @@ cases:
     mode: ASSESS
     parameters:
       PROFILE: STANDARD
+      SETUP_DEPTH: COMPLETE
     expectApplicability: APPLICABLE
     allowedWrites: []
     invariants:
       - Tree digest is unchanged.
       - Root and package units are mapped separately.
+      - Every composed stage has applicability, evidence, planned paths, checks, and gates.
       - The next message is ready to copy and contains no version placeholder.
+  - id: standard-complete-bootstrap
+    fixture: js-ts-monorepo
+    mode: APPLY
+    parameters:
+      PROFILE: STANDARD
+      SETUP_DEPTH: COMPLETE
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - AGENTS.md
+      - DESIGN.md
+      - HARNESS.md
+      - docs/inventory/**
+      - docs/design/**
+      - docs/harness/**
+      - scripts/verify-*
+      - .agents/skills/**
+      - .github/workflows/verify.yml
+    invariants:
+      - Every composed stage is APPLIED, N/A, BLOCKED, or FAILED with evidence.
+      - The terminal readiness grade is reproducible from current criterion states.
+      - A blocked optional stage cannot be reported as READY.
+      - Corepack cannot download a missing package manager during verification.
+      - Second complete apply produces no additional managed diff.
   - id: advanced-embedded-no-copy
     fixture: python-api
     mode: APPLY
     parameters:
       PROFILE: ADVANCED
       TOPOLOGY: EMBEDDED
+      SETUP_DEPTH: COMPLETE
     expectApplicability: APPLICABLE
     allowedWrites:
       - orchestrator/AGENTS.md
@@ -27,11 +53,15 @@ cases:
       - orchestrator/projects.yaml
       - orchestrator/.agents/skills/**
       - orchestrator/docs/routing/**
+      - orchestrator/docs/inventory/**
+      - orchestrator/docs/design/**
+      - orchestrator/docs/harness/readiness.md
       - orchestrator/docs/tasks/**
       - orchestrator/docs/decisions/**
       - orchestrator/docs/policies/**
     invariants:
       - projects.yaml registers the host repository as ..
+      - The routing map resolves the project entrypoint, harness, and sensor hint.
       - No product source appears under orchestrator.
       - Second deterministic render is unchanged.
   - id: advanced-parent-siblings
@@ -40,6 +70,7 @@ cases:
     parameters:
       PROFILE: ADVANCED
       TOPOLOGY: PARENT_HUB
+      SETUP_DEPTH: COMPLETE
     expectApplicability: APPLICABLE
     allowedWrites:
       - orchestrator/AGENTS.md
@@ -49,9 +80,15 @@ cases:
       - orchestrator/projects.yaml
       - orchestrator/.agents/skills/**
       - orchestrator/docs/routing/**
+      - orchestrator/docs/inventory/**
+      - orchestrator/docs/design/**
+      - orchestrator/docs/harness/readiness.md
       - orchestrator/docs/tasks/**
       - orchestrator/docs/decisions/**
       - orchestrator/docs/policies/**
     invariants:
       - Only selected sibling paths are registered.
+      - Every project has role, signals, exclusions, entrypoint, harness, and sensor evidence.
+      - One sample problem per project routes to exactly one target.
+      - An ambiguous problem asks one focused question without loading both projects.
       - No repository is copied or moved.

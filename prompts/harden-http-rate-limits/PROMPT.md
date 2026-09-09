@@ -66,6 +66,8 @@ Do not query production traffic or read secrets.
 - Run focused tests only inside the restricted `shell.verify` envelope:
   inspect transitive scripts, scrub credentials, deny external network, use
   in-process fakes/declared temp paths, set a timeout, and stop children.
+  Resolve package-manager launchers first; for Corepack set
+  `COREPACK_ENABLE_NETWORK=0` and block an uncached manager.
 
 ## Discovery
 

@@ -46,6 +46,37 @@ Before implementation, return exactly one:
 `N/A` includes evidence, reason, and the condition that would make it
 applicable. It ends without writes. Unknown is not `N/A`.
 
+## Composed workflows
+
+A manifest may declare an ordered `composes` list. This makes one self-contained
+entrypoint responsible for running those workflow stages without fetching
+additional prompts.
+
+- The effective effect set is the union of the parent manifest and each named
+  child manifest at the versions recorded in the same catalog.
+- `compositionLock` pins child order, versions, manifest SHA-256 values, and
+  terminal stage. Any mismatch invalidates the parent workflow.
+- The parent must declare every child capability and a risk ceiling at least
+  as high as every child ceiling.
+- Child `requires` determine stage order. Current evidence created by an
+  earlier stage may satisfy a later stage.
+- Each child keeps its own applicability, ownership, gates, provenance marker,
+  verification, and result state. Composition never widens a child effect.
+- `ASSESS` returns one stage matrix without writes. `APPLY` attempts every
+  applicable stage, marks irrelevant stages `N/A`, and records blockers
+  instead of silently skipping them.
+- A composed setup is complete only after its terminal readiness stage
+  recomputes the final grade. Parent `APPLIED` does not turn child
+  `NOT_RUN`, `BLOCKED`, `STALE`, or `FAIL` into success.
+- A child R3 gate still needs its own exact approval. R4 remains manual-only.
+- A declared composition gate applies to the union of child effects. In
+  particular, no child may write a second independent Git root until the
+  `MULTIPLE_GIT_ROOT_WRITES` gate names every target and is approved.
+
+Composition changes orchestration, not authority. The executable parent prompt
+must embed the procedures needed for every child stage and must not download
+mutable child instructions at runtime.
+
 ## Discovery
 
 - Resolve the target root and every Git boundary.
@@ -94,6 +125,10 @@ preserves its timestamp; it must not write “now” on every apply.
 - the exact command and working directory come from an authoritative project
   manifest/harness and are declared by the workflow;
 - scripts and transitive task definitions are inspected before execution;
+- package-manager launchers are resolved before use. A Corepack-backed command
+  runs with `COREPACK_ENABLE_NETWORK=0` and only when the requested manager is
+  already available locally; an offline package-manager flag does not by
+  itself prevent a launcher download;
 - dependency lifecycle/install hooks, migrations, production/shared services,
   authenticated network calls, and Git writes are absent;
 - credentials are removed from the child environment and network is denied
@@ -101,6 +136,10 @@ preserves its timestamp; it must not write “now” on every apply.
 - writes are limited to declared ignored build/cache/temp paths;
 - the process has a timeout and all child processes are stopped;
 - unexpected effects or unverifiable confinement produce `BLOCKED`.
+
+Cache/temp paths are redirected before execution and reported afterwards.
+“Cleanup” means no live child process and no write outside those declared
+paths; it does not authorize deletion.
 
 Static parsers that do not execute repository code are preferred. A command
 outside this envelope is R3/R4 and cannot be relabelled “verification.”
@@ -120,3 +159,8 @@ and can never be reported as approved for workflow execution.
 `APPLIED` requires current evidence, at least one created/modified path, a diff
 review, no unresolved gate, and all mandatory applicable checks to pass.
 Otherwise use `NO_CHANGE`, `PARTIAL`, `BLOCKED`, or `FAILED`.
+
+For complete setup results, every composed stage carries its applicable gate
+records, readiness counts equal the mandatory-criterion states, and both JSON
+Schema and `tools/result-semantics.mjs` must accept the result when the release
+tools are available.

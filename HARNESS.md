@@ -48,6 +48,8 @@ pnpm release:check
 - Standard setup keeps artifacts near code.
 - Advanced embedded registers `..` and copies no source.
 - Advanced parent hub registers sibling paths and respects Git boundaries.
+- Complete setup declares every composed stage and ends with readiness.
+- Advanced routing resolves one project entrypoint and harness before work.
 - `ASSESS` expectation permits no workspace change.
 - Reapplying deterministic templates produces no additional change.
 - A static landing is `N/A` for HTTP rate limiting.

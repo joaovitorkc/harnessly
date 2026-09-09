@@ -1,13 +1,14 @@
 schemaVersion: harnessly.dev/profile/v1
 name: STANDARD
-version: 0.1.0
-description: Keep repository guidance, documentation, and verification close to the code they describe.
+version: 0.2.0
+description: Complete the applicable project harness while keeping guidance, documentation, skills, and verification close to the code they describe.
 topologies:
   - REPO_ROOT
 controlPlane: .
 invariants:
   - Do not create an orchestrator directory.
   - Preserve existing repository and package instruction files.
+  - An explicitly selected non-Git project root is valid when its ownership boundaries are unambiguous; never initialize Git.
   - Scope package-specific guidance to the nearest package root.
   - Create only artifacts justified by detected capabilities.
 artifacts:
@@ -30,9 +31,18 @@ artifacts:
   - path: docs/design/
     when: Multiple components, boundaries, or runtime flows need detail.
     ownership: owned-file
+  - path: docs/inventory/
+    when: COMPLETE setup persists discovered units, commands, runtime relationships, and unknowns.
+    ownership: owned-file
   - path: docs/harness/
     when: Local journeys or more than one verification command exist.
     ownership: owned-file
+  - path: scripts/verify-*
+    when: No truthful canonical verification entrypoint already exists.
+    ownership: owned-file
+  - path: .github/workflows/verify.yml
+    when: COMPLETE setup has a canonical local sensor and safe immutable CI dependencies.
+    ownership: create-only
   - path: docs/decisions/
     when: Material architecture or product decisions need durable records.
     ownership: owned-file
@@ -43,5 +53,5 @@ artifacts:
     when: Confirmed project-specific corrections need concise durable memory.
     ownership: owned-file
   - path: .agents/skills/
-    when: A repeatable project-specific workflow is detected.
+    when: COMPLETE setup has a software unit or a canonical sensor.
     ownership: create-only

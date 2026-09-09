@@ -6,7 +6,11 @@
 
 <div align="center">
 
-# Harnessly
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-banner-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/github-banner-light.png">
+  <img src="./assets/github-banner-light.png" alt="Harnessly" width="100%">
+</picture>
 
 ### Transforme um repositório existente em um lugar onde agentes de programação trabalham sem chutar.
 
@@ -31,7 +35,7 @@ quer preparar**, copie esta mensagem e envie:
 
 ```text
 Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
+Analise este projeto e me mostre o setup interno completo: instruções, design, skills, sensores e o resto que se aplicar. Não altere nada ainda.
 ```
 
 O Harnessly vai mapear o projeto e explicar o plano. Se fizer sentido, responda
@@ -45,12 +49,31 @@ Só isso. Você não precisa trocar nenhum texto na URL, saber o que é SHA ou
 colar o link de novo. O agente continua usando exatamente o workflow que já
 analisou.
 
-Quer um `orchestrator/` para organizar vários repositórios? Troque apenas a
-segunda linha:
+### Setup normal
+
+Um repositório. Você abre a IA nessa pasta. Depois de aplicar, o setup fica
+ali: `AGENTS.md`, `DESIGN.md`, `HARNESS.md`, inventário, skills, scripts de
+verificação, gates e o resto que o projeto realmente precisa.
+
+No dia a dia você continua trabalhando nessa mesma pasta. A IA já tem o mapa.
+
+### Setup Orchestrator
+
+Vários projetos. O Harnessly cria uma pasta `orchestrator/` que vira a mesa:
+você abre a IA ali e só manda o problema. Ele identifica qual projeto
+registrado é o alvo, lê o `AGENTS.md` e o `HARNESS.md` daquele projeto,
+trabalha dentro do repositório certo e usa o sensor dele para validar.
+
+É o mesmo jeito de operar um hub de vários produtos: um lugar para mandar o
+problema, e o projeto escolhido já sabe como resolver. O Orchestrator guarda
+roteamento, planos e referências. Não copia código e não é um serviço rodando
+escondido.
+
+Para escolher essa opção, troque apenas a segunda linha:
 
 ```text
 Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
-Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
+Quero o setup Orchestrator: uma central onde eu mando o problema, ele identifica o projeto e resolve com as instruções, o design, as skills e os sensores daquele projeto. Primeiro analise e não altere nada ainda.
 ```
 
 Se sua IA não abre URLs, abra ou cole o
@@ -83,10 +106,16 @@ agentes de programação. Você entrega um workflow para a IA que já usa; o
 Harnessly dá a ela uma forma repetível de analisar o repositório, explicar o
 que está faltando e fazer somente as mudanças que você aprovar.
 
-O resultado é um **harness específico para o projeto**: um conjunto enxuto de
-instruções, documentação do sistema, mapas de pacotes, gates de qualidade,
-verificações locais e limites de segurança que evita que a IA improvise em
-volta do seu código.
+O prompt inicial compõe todo o catálogo aplicável na mesma conversa. Ele não
+para em três arquivos de índice. O padrão é o setup interno completo: cada
+etapa relevante roda, e no fim vem uma nota de prontidão com evidência. O que
+for perigoso, irrelevante ou incerto continua visível como gated, `N/A` ou
+`BLOCKED`.
+
+O resultado é um **harness específico para o projeto** — o mesmo tipo de
+camada de engenharia usada para manter vários produtos coerentes: instruções,
+design, skills, sensores e checks adaptados *a este* repositório. Não é uma
+cópia das regras de outro produto.
 
 O Harnessly não força framework nem presume que todo repositório precisa do
 mesmo setup. Ele segue evidências. Um monorepo pode receber orientação por
@@ -110,26 +139,35 @@ e workflows verificáveis.
 
 ## O que ele coloca no projeto
 
-O Harnessly cria o que estiver faltando e preserva o que você já fez:
+Um apply aprovado do prompt inicial, por padrão, instala o setup interno
+aplicável — não um starter fino. Arquivos típicos:
 
-- uma entrada clara para a IA entender o projeto;
-- documentação de arquitetura e decisões;
-- mapa de pacotes, comandos e repositórios;
-- um caminho confiável para validar o código;
-- adaptadores seguros para Cursor, Claude Code e Copilot;
-- verificações específicas para CI, dependências, configuração e rate limit.
+- `AGENTS.md` — por onde a IA começa, limites e o comando de verificação;
+- `DESIGN.md` e `docs/design/` — como o sistema funciona de verdade;
+- `HARNESS.md`, `docs/harness/` e `scripts/verify-*` — jornadas locais e o
+  sensor canônico;
+- `.agents/skills/` — pelo menos uma skill de verificação, mais skills para
+  fluxos que o repo já repete;
+- `docs/inventory/`, `docs/tasks/`, `docs/decisions/`, `docs/learnings.md`;
+- adaptadores finos de Cursor, Claude Code e Copilot, quando esses hosts
+  existem;
+- CI só de verificação quando já houver sensor local e pins seguros;
+- rate limit HTTP só se existir um endpoint de servidor próprio.
 
-Ele se adapta ao projeto de verdade. Uma landing estática não ganha middleware
-de servidor, e uma ferramenta desconhecida aparece como dúvida — nunca como
-chute.
+Ele cria o que está faltando e preserva o que você já fez. Uma landing
+estática não ganha middleware de servidor. Ferramenta desconhecida vira
+dúvida, não chute. Skills bem específicas de produto (uma tela única, um
+ritual de deploy) só entram se o repositório já mostrar esse trabalho; o
+prompt não inventa isso.
 
 ## As duas escolhas, sem complicar
 
 - **Só olhar** (`ASSESS`): analisa e explica, sem editar.
 - **Aplicar** (`APPLY`): faz somente as mudanças locais aprovadas e valida.
 - **Setup normal** (`STANDARD`): deixa a orientação perto do código.
-- **Setup avançado** (`ADVANCED`): cria um `orchestrator/` que aponta para os
-  repositórios existentes, sem copiar nem mover código.
+- **Setup Orchestrator** (`ADVANCED`): cria uma central que identifica o
+  projeto certo para cada problema e carrega o harness dele, sem copiar nem
+  mover código.
 
 No uso normal de duas mensagens, você pode ignorar os nomes entre parênteses.
 Eles existem para automações e execuções repetíveis.
