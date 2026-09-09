@@ -17,7 +17,7 @@
 Harnessly maps the project, proposes the right engineering harness, and waits
 for your approval before changing files.
 
-**Map first. Approve the plan. Change with evidence.**
+**One place. The right project.**
 
 [Start in 30 seconds](#start-with-harnessly) ·
 [What is Harnessly?](#what-is-harnessly) ·

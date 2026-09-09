@@ -17,7 +17,7 @@
 O Harnessly mapeia o projeto, propõe o harness de engenharia certo e espera sua
 autorização antes de alterar arquivos.
 
-**Primeiro mapeia. Você aprova. Depois muda com evidência.**
+**Um só lugar. O projeto certo.**
 
 [Comece em 30 segundos](#comece-com-o-harnessly) ·
 [O que é o Harnessly?](#o-que-é-o-harnessly) ·
