@@ -146,6 +146,7 @@ verification:
   - No product source or repository is copied, moved, or nested.
   - Existing unmanaged instructions are preserved.
   - A second deterministic setup produces no additional managed changes.
+  - Assessment returns a plain-language next message without tag or SHA placeholders.
 compatibility:
   portableCore: markdown
   adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

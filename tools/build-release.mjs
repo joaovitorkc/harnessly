@@ -76,6 +76,7 @@ const rootFiles = [
 
 const sourceDirectories = [
   "LICENSES",
+  "assets",
   "contracts",
   "profiles",
   "docs",

@@ -11,6 +11,7 @@ cases:
     invariants:
       - Tree digest is unchanged.
       - Root and package units are mapped separately.
+      - The next message is ready to copy and contains no version placeholder.
   - id: advanced-embedded-no-copy
     fixture: python-api
     mode: APPLY

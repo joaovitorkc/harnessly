@@ -1,74 +1,97 @@
+<p align="center">
+  <img src="./assets/harnessly-hero.svg" alt="Harnessly — primeiro mapeia, depois muda com confiança" width="100%">
+</p>
+
 # Harnessly
 
-> **Preview de desenvolvimento (`0.1.0-beta.1`):** este working tree ainda não
-> foi publicado em `joaovitorkc/harnessly`. Use os `PROMPT.md` locais para
-> revisar/testar. As URLs Raw abaixo só funcionarão depois da criação do repo e
-> de um release verificável.
+**Dê à sua IA o contexto, os limites e as verificações que o projeto realmente
+precisa — sem reconstruir tudo em volta de uma ferramenta nova.**
 
-Mapeie o código. Instale o harness certo. Mantenha os agentes de programação
-dentro de um contrato verificável.
+O Harnessly olha o repositório primeiro, mostra um plano concreto e espera sua
+autorização antes de alterar qualquer coisa. Funciona com Markdown puro no
+Cursor, Claude Code, GitHub Copilot e outros agentes de programação.
 
-[English](./README.md) · [Início rápido](./docs/quickstart.pt-BR.md) ·
-[Catálogo](./docs/prompts/README.md) · [Segurança](./SECURITY.md)
+[English](./README.md) · [Comece aqui](./docs/quickstart.pt-BR.md) ·
+[Catálogo de workflows](./docs/prompts/README.md) · [Segurança](./SECURITY.md)
 
-Harnessly é um toolkit Markdown-first para preparar repositórios existentes
-para trabalho confiável com agentes de programação. Ele primeiro descobre o
-formato real do projeto, depois propõe somente a documentação, as instruções de
-agente, os gates de qualidade e os sensores que realmente se aplicam.
+> **Preview de desenvolvimento (`0.1.0-beta.1`):** o repositório público e o
+> release ainda não estão no ar. A mensagem pronta abaixo funcionará depois da
+> publicação. Até lá, use o
+> [`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md)
+> local.
 
-Não existe runtime obrigatório para o usuário. O workflow pode chegar ao agente
-por texto colado, arquivo local ou URL Raw fixada no SHA completo. `AGENTS.md` e o padrão
-aberto Agent Skills formam o núcleo; arquivos de Cursor, Claude Code e GitHub
-Copilot são adaptadores.
+## Comece em uns 30 segundos
 
-## Comece em uma linha
-
-Use a tag publicada como atalho para avaliar. Para `MODE=APPLY`, resolva o
-manifesto do release e troque `<SHA_COMPLETO>` pelo `sourceRevision` exato de
-40 caracteres; a própria tag pode mudar.
-
-Mapear sem alterar:
+Não tem CLI nem pacote para instalar. Abra sua IA **dentro do projeto que você
+quer preparar**, copie esta mensagem e envie:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OU_SHA_COMPLETO>/prompts/setup-workspace/PROMPT.md
-e siga o workflow neste repositório com MODE=ASSESS PROFILE=STANDARD.
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
 ```
 
-Aplicar o setup padrão:
+O Harnessly vai mapear o projeto e explicar o plano. Se fizer sentido, responda
+no **mesmo chat**:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<SHA_COMPLETO>/prompts/setup-workspace/PROMPT.md
-e siga o workflow neste repositório com MODE=APPLY PROFILE=STANDARD.
+Pode aplicar o plano que você acabou de me mostrar. Valide o resultado e diga o que não conseguiu verificar.
 ```
 
-Mapear o perfil avançado:
+Só isso. Você não precisa trocar nenhum texto na URL, saber o que é SHA ou
+colar o link de novo. O agente continua usando exatamente o workflow que já
+analisou.
+
+Quer um `orchestrator/` para organizar vários repositórios? Troque apenas a
+segunda linha:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OU_SHA_COMPLETO>/prompts/setup-workspace/PROMPT.md
-e siga o workflow com MODE=ASSESS PROFILE=ADVANCED TOPOLOGY=AUTO.
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
 ```
 
-Se o agente não abre URLs, baixe ou copie
-[`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md).
-Não use URL de branch ou tag móvel com `MODE=APPLY`.
+Se sua IA não abre URLs, abra ou cole o
+[`PROMPT.md`](./prompts/setup-workspace/PROMPT.md) local e mande o mesmo pedido
+em linguagem normal.
 
-## Dois controles diferentes
+## O que ele coloca no projeto
 
-`MODE` define permissão:
+O Harnessly cria o que estiver faltando e preserva o que você já fez:
 
-- `ASSESS` é somente leitura e é o padrão quando o modo não for informado.
-- `APPLY` permite apenas alterações locais declaradas pelo workflow. Commit,
-  push, produção, migrations, secrets, exclusões e writes externos continuam
-  bloqueados ou exigem autorização específica.
+- uma entrada clara para a IA entender o projeto;
+- documentação de arquitetura e decisões;
+- mapa de pacotes, comandos e repositórios;
+- um caminho confiável para validar o código;
+- adaptadores seguros para Cursor, Claude Code e Copilot;
+- verificações específicas para CI, dependências, configuração e rate limit.
 
-`PROFILE` define organização:
+Ele se adapta ao projeto de verdade. Uma landing estática não ganha middleware
+de servidor, e uma ferramenta desconhecida aparece como dúvida — nunca como
+chute.
 
-- `STANDARD` mantém docs, instruções e sensores perto do código descrito.
-- `ADVANCED` cria um control plane em `orchestrator/`. Dentro de um repo ele
-  aponta para `..`; na pasta pai ele registra os repositórios irmãos. Código
-  nunca é copiado ou movido.
+## As duas escolhas, sem complicar
 
-Usar o perfil avançado não concede mais permissões.
+- **Só olhar** (`ASSESS`): analisa e explica, sem editar.
+- **Aplicar** (`APPLY`): faz somente as mudanças locais aprovadas e valida.
+- **Setup normal** (`STANDARD`): deixa a orientação perto do código.
+- **Setup avançado** (`ADVANCED`): cria um `orchestrator/` que aponta para os
+  repositórios existentes, sem copiar nem mover código.
+
+No uso normal de duas mensagens, você pode ignorar os nomes entre parênteses.
+Eles existem para automações e execuções repetíveis.
+
+## Por que não é só mais um prompt genérico
+
+- Primeiro coleta evidências; depois propõe arquivos.
+- Trata o conteúdo do repositório como dado, não como nova instrução.
+- Commit, push, produção, migrations, secrets, operações destrutivas e writes
+  externos ficam fora da aplicação normal.
+- Arquivos gerenciados têm regras de propriedade e detecção de alterações.
+- Checks determinísticos validam contratos, links, adaptadores, fixtures,
+  invariantes estruturais e digests de release.
+
+O Harnessly é um toolkit de prompts. Não é uma IA, runtime de agente, preset de
+framework ou gerador de aplicações. Os detalhes de versão e integridade ficam
+em [`docs/versioning.md`](./docs/versioning.md).
 
 ## O que a v0.1 cobre
 

@@ -1,108 +1,95 @@
+<p align="center">
+  <img src="./assets/harnessly-hero.svg" alt="Harnessly — map first, change with confidence" width="100%">
+</p>
+
 # Harnessly
 
-> **Development preview (`0.1.0-beta.1`):** this working tree has not been
-> published under `joaovitorkc/harnessly` yet. Use local `PROMPT.md` files for
-> review/testing. The Raw URLs below become executable only after the repository
-> and a verified release exist.
+**Give your coding agent the context, guardrails, and checks your project
+actually needs — without rebuilding the project around a new tool.**
 
-Map the codebase. Install the right engineering harness. Keep coding agents
-inside a verifiable contract.
+Harnessly looks at the repository first, shows you a concrete plan, and waits
+for your approval before changing anything. It works through plain Markdown
+with Cursor, Claude Code, GitHub Copilot, and other coding agents.
 
-[Português](./README.pt-BR.md) · [Quickstart](./docs/quickstart.md) ·
-[Prompt catalog](./docs/prompts/README.md) · [Security](./SECURITY.md)
+[Português](./README.pt-BR.md) · [Start here](./docs/quickstart.md) ·
+[Workflow catalog](./docs/prompts/README.md) · [Security](./SECURITY.md)
 
-Harnessly is a Markdown-first toolkit for making an existing repository easier
-and safer to maintain with coding agents. It discovers the repository before
-proposing changes, adapts to monorepos and mixed stacks, and creates only the
-documentation, agent instructions, quality gates, and test harnesses that the
-project actually needs.
+> **Development preview (`0.1.0-beta.1`):** the public repository and release
+> are not live yet. The ready-to-copy URL below will work after publication.
+> Until then, use the local
+> [`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md).
 
-The user does not install a runtime. Any capable coding agent can receive a
-plain Markdown workflow by copy/paste, local file, or full-commit-SHA Raw
-GitHub URL.
-Native Cursor, Claude Code, and GitHub Copilot files are adapters around the
-same portable contract.
+## Start in about 30 seconds
 
-## What makes it different
-
-- **Assess before changing:** every workflow supports `MODE=ASSESS` and
-  `MODE=APPLY`. Missing mode defaults to the read-only `ASSESS`.
-- **Evidence over guesses:** detected stacks, commands, boundaries, and
-  unknowns are reported with paths and confidence.
-- **Applicable or safely N/A:** a static landing page will not receive API
-  middleware; a repository without a database will not get invented database
-  rules.
-- **Monorepo aware:** root guidance and package-specific guidance are scoped
-  separately.
-- **Vendor-neutral core:** `AGENTS.md`, Markdown, and the open Agent Skills
-  format are canonical. Vendor-specific files stay thin.
-- **No hidden autonomy:** Git commits, pushes, remote writes, production
-  access, migrations, secrets, destructive operations, and physical repo moves
-  are never implied by `MODE=APPLY`.
-- **Checked as contracts:** deterministic checks validate manifests, links,
-  adapters, fixture detection, executable structural invariants, and release
-  digests. Behavioral LLM scenarios remain specifications until a recorded
-  host evaluation observes them.
-
-Harnessly is not an AI model, coding-agent runtime, project generator, or
-one-size-fits-all framework preset.
-
-## Quick start
-
-Use a release tag as a convenient assessment alias. For `MODE=APPLY`, resolve
-the release manifest and replace `<FULL_COMMIT_SHA>` with its exact
-40-character `sourceRevision`; tags themselves can move.
-
-Read-only assessment with the standard in-repository profile:
+No CLI. No package to install. Open your coding agent **in the project you want
+to prepare**, copy this message, and send it:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OR_FULL_COMMIT_SHA>/prompts/setup-workspace/PROMPT.md
-and follow it in this repository with MODE=ASSESS PROFILE=STANDARD.
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Analyze this project and show me the setup you recommend. Do not change anything yet.
 ```
 
-Apply the approved standard setup:
+Harnessly maps the project and explains the plan. If it looks right, reply in
+the **same chat**:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<FULL_COMMIT_SHA>/prompts/setup-workspace/PROMPT.md
-and follow it in this repository with MODE=APPLY PROFILE=STANDARD.
+Apply the plan you just showed me. Verify the result and tell me what you could not check.
 ```
 
-Assess an advanced control plane without copying or moving product code:
+That is the normal flow. You do not need to replace a placeholder, understand
+a commit SHA, or paste the URL again. The agent reuses the exact workflow it
+already assessed.
+
+Want an `orchestrator/` for several repositories? Change only the second line:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OR_FULL_COMMIT_SHA>/prompts/setup-workspace/PROMPT.md
-and follow it with MODE=ASSESS PROFILE=ADVANCED TOPOLOGY=AUTO.
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+I want the advanced setup with an orchestrator folder. Analyze first and do not change anything yet.
 ```
 
-If your agent cannot read URLs, download or copy
-[`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md) and
-paste the same parameters after it. URL access is a convenience, not part of
-the portable contract.
+If your agent cannot open URLs, open or paste the local
+[`PROMPT.md`](./prompts/setup-workspace/PROMPT.md), then send the same
+plain-language request.
 
-Do not use a moving branch or tag URL with `MODE=APPLY`. See
-[versioning and integrity](./docs/versioning.md).
+## What it adds
 
-## Modes and profiles
+Harnessly can create the pieces that are missing and preserve the ones you
+already have:
 
-Modes control permission:
+- a clear project entrypoint for coding agents;
+- system design and decision docs;
+- package, command, and repository maps;
+- local verification commands and quality gates;
+- safe Cursor, Claude Code, and Copilot adapters;
+- focused checks for CI, dependencies, configuration, and HTTP rate limits.
 
-- `MODE=ASSESS` inspects and reports. It must not write files, install
-  dependencies, initialize Git, run mutating commands, or cause external
-  effects.
-- `MODE=APPLY` repeats discovery, then performs only the local repository
-  changes declared by that workflow. High-risk actions remain gated or
-  forbidden.
+It adapts to the real stack. A static landing page does not receive server
+middleware, and an unfamiliar tool is reported instead of guessed.
 
-Profiles control where the setup artifacts live:
+## The two choices, in plain English
 
-- `PROFILE=STANDARD` keeps relevant instructions, docs, and sensors near the
-  repository or package they describe.
-- `PROFILE=ADVANCED` creates an `orchestrator/` control plane. From inside a
-  repository it points back to `..`; from a common parent it registers sibling
-  repositories. It never duplicates or relocates source code.
+- **Look only** (`ASSESS`): inspect and explain; never edit.
+- **Apply** (`APPLY`): make only the approved local changes, then verify.
+- **Normal setup** (`STANDARD`): keep guidance next to the code.
+- **Advanced setup** (`ADVANCED`): add an `orchestrator/` that points to
+  existing repositories without copying or moving them.
 
-These axes are independent. `PROFILE=ADVANCED` does not grant additional
-permissions.
+You can ignore the words in parentheses during the normal two-message flow.
+They exist for automation and repeatable runs.
+
+## Why it is safer than a generic setup prompt
+
+- It gathers evidence before proposing files.
+- Repository content is treated as untrusted data, not new instructions.
+- Git commits, pushes, production access, migrations, secrets, destructive
+  operations, and remote writes stay outside normal apply.
+- Managed files have ownership and drift rules.
+- Deterministic checks validate contracts, links, adapters, fixture detection,
+  structural invariants, and release digests.
+
+Harnessly is a prompt toolkit, not an AI model, agent runtime, framework
+preset, or project generator. For pinned releases and integrity details, see
+[versioning](./docs/versioning.md).
 
 ## Initial catalog
 

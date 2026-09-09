@@ -3,6 +3,23 @@
 Executable: [`../../prompts/setup-workspace/PROMPT.md`](../../prompts/setup-workspace/PROMPT.md)
 Manifest: [`../../prompts/setup-workspace/manifest.yaml`](../../prompts/setup-workspace/manifest.yaml)
 
+## Fast path
+
+Open the workflow in your coding agent and say:
+
+```text
+Analyze this project and show me the setup you recommend. Do not change anything yet.
+```
+
+If the plan looks right, reply in the same chat:
+
+```text
+Apply the plan you just showed me. Verify the result and tell me what you could not check.
+```
+
+That is enough for the normal setup. The parameters below are optional controls
+for automation or a less common layout.
+
 ## Use it when
 
 - adopting coding agents in an existing repository;
@@ -13,7 +30,7 @@ Manifest: [`../../prompts/setup-workspace/manifest.yaml`](../../prompts/setup-wo
 Do not use it to initialize an empty application, migrate repositories, install
 a framework, or replace a team's existing engineering process wholesale.
 
-## Parameters
+## Optional controls
 
 - `MODE`: `ASSESS` or `APPLY`; default `ASSESS`.
 - `PROFILE`: `STANDARD` or `ADVANCED`; default `STANDARD`.

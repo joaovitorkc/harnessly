@@ -29,6 +29,11 @@ If `MODE` is missing, use `ASSESS`.
 
 Changing modes requires a new explicit user instruction.
 
+When the user approves apply in the same chat, reuse the exact workflow bytes
+and digest already used for assessment; do not fetch a branch or tag again. If
+that workflow context is unavailable, stop and request a local copy or
+full-commit-SHA source instead of guessing.
+
 ## Applicability
 
 Before implementation, return exactly one:

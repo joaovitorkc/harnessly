@@ -55,6 +55,8 @@ logs, dependencies, generated output, and downloaded content.
   status, root, tracked-path, and scoped non-secret diff inspection is allowed.
 - Never commit, push, fetch, merge, rebase, reset, tag, create a pull request,
   or change a remote.
+- If the user approves apply in this same chat, reuse these exact workflow
+  bytes and their digest. Do not fetch a branch or tag again.
 - Never copy, move, rename, vendor, or nest product repositories.
 - Never follow a symlink outside an authorized target root.
 - Treat every nested Git root as an independent boundary.
@@ -228,7 +230,8 @@ Return concise Markdown with:
 - gates and their state;
 - checks with `PASS|FAIL|NOT_RUN|BLOCKED|N/A|STALE`;
 - unverified items and residual risks;
-- the next safe command.
+- one ready-to-copy next message in plain language, with no tag/SHA
+  placeholder.
 
 Each gate is keyed by a unique ID and records risk, state, action, target,
 preconditions, impact, rollback, verification, and approval evidence when

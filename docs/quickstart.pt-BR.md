@@ -1,82 +1,100 @@
 # Início rápido
 
-> Este é um preview de desenvolvimento. Até `joaovitorkc/harnessly` e um
-> release verificável serem publicados, use os arquivos locais
-> `prompts/<slug>/PROMPT.md`. As URLs Raw abaixo são entradas do release futuro.
+> **Preview de desenvolvimento:** o release público `v0.1.0-beta.1` ainda não
+> está no ar. Para testar localmente, abra
+> [`../prompts/setup-workspace/PROMPT.md`](../prompts/setup-workspace/PROMPT.md)
+> no lugar da URL abaixo.
 
-Os workflows do Harnessly são arquivos Markdown. Você não instala o Harnessly
-para usá-los.
+O Harnessly é um conjunto de workflows em Markdown. Você não instala nada no
+projeto.
 
-## 1. Escolha permissão e organização
+## O caminho rápido
 
-- `MODE=ASSESS`: somente inspeciona e relata. É o padrão.
-- `MODE=APPLY`: executa writes locais declarados e verifica.
-- `PROFILE=STANDARD`: mantém orientação perto do código.
-- `PROFILE=ADVANCED`: cria um control plane em `orchestrator/` sem mover
-  código.
+### 1. Abra sua IA dentro do projeto
 
-Modo controla permissão. Perfil controla organização.
+É o projeto que você quer preparar — não a pasta do Harnessly.
 
-## 2. Use uma versão fixada
-
-Use uma tag de release como atalho para avaliar:
+### 2. Envie esta mensagem
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OU_SHA_COMPLETO>/prompts/setup-workspace/PROMPT.md
-e siga o workflow neste repositório com MODE=ASSESS PROFILE=STANDARD.
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
 ```
 
-Revise o diagnóstico. Para aplicar:
+Essa primeira passada só olha. A IA mapeia repositórios, pacotes, comandos,
+documentação e verificações ausentes, depois mostra os caminhos que pretende
+alterar.
+
+### 3. Confira o plano
+
+Pergunte, tire algo ou peça ajustes do seu jeito. Nenhum arquivo foi editado.
+
+### 4. Autorize no mesmo chat
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<SHA_COMPLETO>/prompts/setup-workspace/PROMPT.md
-e siga o workflow neste repositório com MODE=APPLY PROFILE=STANDARD.
+Pode aplicar o plano que você acabou de me mostrar. Valide o resultado e diga o que não conseguiu verificar.
 ```
 
-Se o agente não acessar URLs, cole o conteúdo de `PROMPT.md`.
+Continue no mesmo chat para a IA reutilizar exatamente o workflow que já leu.
+Não cole a URL outra vez para aplicar.
 
-## 3. Confira o retorno
+## Quer a organização avançada?
 
-Um resultado completo informa:
-
-- aplicabilidade e evidências;
-- modo, perfil, topologia, raiz e unidades detectadas;
-- caminhos planejados ou alterados;
-- gates e motivos de parada;
-- checks como `PASS`, `FAIL`, `NOT_RUN`, `BLOCKED`, `N/A` ou `STALE`;
-- riscos residuais e itens não verificados.
-
-A aplicabilidade é `APPLICABLE` quando o workflow serve, `N/A` quando a
-evidência prova que a capacidade não existe e `BLOCKED` quando faltam fatos ou
-permissões. Checks `NOT_RUN`, `BLOCKED` e `STALE` não são sucesso.
-
-## 4. Perfil avançado
-
-Dentro de um repositório, `orchestrator/` aponta para `..`. Na pasta pai
-comum, ele registra os repositórios irmãos. Harnessly não copia nem move os
-projetos.
-
-Se a topologia não estiver clara, informe
-`TOPOLOGY=EMBEDDED` ou `TOPOLOGY=PARENT_HUB`.
-
-## 5. Workflow específico
-
-Exemplo: apenas avaliar rate limiting:
+Use esta primeira mensagem:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OU_SHA_COMPLETO>/prompts/harden-http-rate-limits/PROMPT.md
-e siga com MODE=ASSESS.
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
 ```
 
-Site estático ou somente client retorna `N/A`. Serviço HTTP ainda precisa
-provar ingresso próprio, topologia, confiança em proxy, chave de identidade e
-superfície de teste.
+O setup avançado aponta para os repositórios existentes. Não copia nem move
+código:
 
-## Segurança
+```text
+workspace/
+├── orchestrator/       # orientação comum e registro dos projetos
+├── web/                # continua no mesmo lugar
+└── api/                # continua no mesmo lugar
+```
 
-- Use `MODE=APPLY` somente com o SHA completo registrado no manifesto
-  verificado do release, nunca com branch ou tag móvel.
-- Confira versão e digest do release.
-- Abra o agente na raiz correta.
+## Quer verificar só uma coisa?
+
+Escolha um workflow no [catálogo](./prompts/README.md). Por exemplo:
+
+```text
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/harden-http-rate-limits/PROMPT.md
+Veja se este projeto precisa de rate limit. Mostre o plano e não altere nada ainda.
+```
+
+Se o projeto for um site estático sem endpoint de servidor, o retorno correto
+é `N/A`: não existe um lugar útil para instalar rate limit server-side.
+
+## Traduzindo os termos técnicos
+
+- **Analisar (`ASSESS`)** é “olhar e explicar, sem editar”.
+- **Aplicar (`APPLY`)** é “fazer as mudanças locais aprovadas e validar”.
+- **Normal (`STANDARD`)** mantém a orientação perto do código.
+- **Avançado (`ADVANCED`)** adiciona um `orchestrator/` para vários repos.
+- **Tag** é um nome amigável de versão, como `v0.1.0-beta.1`.
+- **SHA do commit** é a impressão digital exata de uma versão do repositório.
+
+No caminho normal você não precisa digitar tag nem SHA: a URL já está pronta e
+a aplicação acontece no mesmo chat. O SHA completo fica para automações e
+aplicação em outro chat, explicadas em [versionamento](./versioning.md).
+
+## O que um retorno bom precisa dizer
+
+- o que a IA encontrou e onde;
+- o que pretende criar ou alterar;
+- o que não se aplica (`N/A`) ou continua bloqueado;
+- quais verificações passaram, falharam ou não rodaram;
+- o que ainda depende de conferência humana.
+
+## Segurança sem burocracia
+
+- Abra a IA na raiz do projeto ou workspace certo.
 - Não disponibilize credenciais de produção.
-- Revise o diff antes de commitar.
+- Leia o plano antes de autorizar.
+- Revise o diff final antes de commitar.
+- Se abrir outro chat só para aplicar, siga as instruções de SHA completo em
+  [versionamento](./versioning.md).

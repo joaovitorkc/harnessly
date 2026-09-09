@@ -1,96 +1,100 @@
 # Quickstart
 
-> This is a development preview. Until `joaovitorkc/harnessly` and a verified
-> release are published, use the local `prompts/<slug>/PROMPT.md` files. The
-> example Raw URLs are future release entrypoints.
+> **Development preview:** the public `v0.1.0-beta.1` release is not live yet.
+> For local testing, open
+> [`../prompts/setup-workspace/PROMPT.md`](../prompts/setup-workspace/PROMPT.md)
+> instead of using the URL below.
 
-Harnessly workflows are Markdown files. You can use them without installing
-Harnessly.
+Harnessly is a set of Markdown workflows. You do not install it in the project.
 
-## 1. Choose permission and layout
+## The fast path
 
-- `MODE=ASSESS`: inspect and report only. This is the default.
-- `MODE=APPLY`: perform declared local writes, then verify.
-- `PROFILE=STANDARD`: keep guidance close to the code.
-- `PROFILE=ADVANCED`: create an `orchestrator/` control plane without moving
-  code.
+### 1. Open your coding agent in the target project
 
-Mode controls permission. Profile controls organization.
+The target project is the codebase you want Harnessly to prepare — not the
+Harnessly repository.
 
-## 2. Use a version-pinned workflow
-
-Use a release tag as an assessment alias:
+### 2. Send this message
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OR_FULL_COMMIT_SHA>/prompts/setup-workspace/PROMPT.md
-and follow it in this repository with MODE=ASSESS PROFILE=STANDARD.
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Analyze this project and show me the setup you recommend. Do not change anything yet.
 ```
 
-Review the assessment. To apply:
+The first pass is read-only. The agent maps the repositories, packages,
+commands, docs, and missing checks, then shows the proposed paths.
+
+### 3. Review the plan
+
+Ask questions or request changes in normal language. Nothing has been edited.
+
+### 4. Approve in the same chat
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<FULL_COMMIT_SHA>/prompts/setup-workspace/PROMPT.md
-and follow it in this repository with MODE=APPLY PROFILE=STANDARD.
+Apply the plan you just showed me. Verify the result and tell me what you could not check.
 ```
 
-If URL access is unavailable, paste the local or downloaded `PROMPT.md`.
+Stay in the same chat so the agent reuses the exact workflow it already read.
+Do not paste the URL again for apply.
 
-## 3. Check the report
+## Want the advanced layout?
 
-A complete result states:
-
-- applicability and evidence;
-- mode, profile, topology, target root, and detected units;
-- planned or applied paths;
-- gates and stop reasons;
-- checks with `PASS`, `FAIL`, `NOT_RUN`, `BLOCKED`, `N/A`, or `STALE`;
-- residual risks and unverified items.
-
-Applicability is `APPLICABLE` when the workflow fits, `N/A` when evidence
-proves the capability is absent, and `BLOCKED` when required facts or
-permissions are unresolved. `NOT_RUN`, `BLOCKED`, and `STALE` checks are not
-success.
-
-## 4. Advanced topology
-
-From inside one repository:
+Use this first message instead:
 
 ```text
-repo/
-├── existing-code/
-└── orchestrator/       # registry points to ..
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+I want the advanced setup with an orchestrator folder. Analyze first and do not change anything yet.
 ```
 
-From a common parent:
+The advanced layout points to existing repositories. It never copies or moves
+their code:
 
 ```text
 workspace/
-├── orchestrator/       # registry points to sibling repos
-├── web/
-└── api/
+├── orchestrator/       # shared guidance and project registry
+├── web/                # remains where it is
+└── api/                # remains where it is
 ```
 
-Harnessly does not copy or move the repositories. If topology is ambiguous,
-the workflow stops and asks for `TOPOLOGY=EMBEDDED|PARENT_HUB`.
+## Want just one check?
 
-## 5. Run a focused workflow
-
-Example: assess rate limiting only:
+Pick a workflow from the [catalog](./prompts/README.md). For example:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/<TAG_OR_FULL_COMMIT_SHA>/prompts/harden-http-rate-limits/PROMPT.md
-and follow it with MODE=ASSESS.
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/harden-http-rate-limits/PROMPT.md
+Check whether this project needs rate limiting. Show me the plan and do not change anything yet.
 ```
 
-A static or client-only site must return `N/A`. An HTTP service must still
-prove its owned ingress, deployment shape, proxy trust, identity key, and test
-surface before apply.
+If the project is a static site with no server endpoint, the honest result is
+`N/A`: there is nowhere useful to install server-side rate limiting.
 
-## Safety notes
+## The technical words, translated
 
-- Run `MODE=APPLY` only from the full commit SHA recorded by the verified
-  release manifest, not from a moving branch or tag.
-- Inspect the selected version and release digest.
-- Start the agent at the intended repository or parent workspace root.
+- **Assess (`ASSESS`)** means “look and explain, but do not edit.”
+- **Apply (`APPLY`)** means “perform the approved local changes and verify.”
+- **Standard (`STANDARD`)** keeps guidance close to the code.
+- **Advanced (`ADVANCED`)** adds an `orchestrator/` for several repositories.
+- A **tag** is a friendly release name such as `v0.1.0-beta.1`.
+- A **commit SHA** is the exact fingerprint of one repository snapshot.
+
+You do not need to type a tag or SHA in the normal flow: the release URL is
+already complete, and apply happens in the same chat. Full-SHA instructions
+exist for automation and separate-session verification in
+[versioning](./versioning.md).
+
+## What a good result tells you
+
+- what the agent found and where;
+- what it plans to create or change;
+- what is not relevant (`N/A`) or still blocked;
+- which checks passed, failed, or were not run;
+- what remains for a human to verify.
+
+## Keep these safety basics
+
+- Start the agent at the intended project or workspace root.
 - Keep production credentials unavailable.
-- Review `git diff` yourself before committing.
+- Read the proposed plan before approving.
+- Review the final diff before you commit.
+- If you start a separate apply chat, follow the full-SHA instructions in
+  [versioning](./versioning.md).

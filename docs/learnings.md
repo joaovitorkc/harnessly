@@ -2,6 +2,9 @@
 
 Short durable corrections only:
 
+- ❌ Start with tag/SHA placeholders and contract jargon -> ✅ give users one
+  ready-to-copy assessment command, then let them approve in plain language in
+  the same chat.
 - Copying a project into an embedded orchestrator creates two sources of truth
   -> register the existing root by relative path and never copy/move code.
 - “Works with any AI” is not verifiable -> state the portable baseline and
