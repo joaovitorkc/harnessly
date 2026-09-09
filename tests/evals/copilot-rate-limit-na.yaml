@@ -1,0 +1,33 @@
+schemaVersion: harnessly.dev/eval/v1
+id: copilot-rate-limit-na
+workflow: harden-http-rate-limits
+workflowDigest: NOT_RUN
+fixture: static-landing
+fixtureDigest: NOT_RUN
+host: GitHub Copilot
+model: not-recorded
+status: not-run
+observedAt: null
+mode: APPLY
+applicability: NOT_RUN
+parameters:
+  STORE: AUTO
+  TRUST_PROXY: DETECT
+permissions:
+  filesystem: NOT_RUN
+  network: NOT_RUN
+  commands: NOT_RUN
+beforeTreeDigest: NOT_RUN
+afterTreeDigest: NOT_RUN
+secondRunTreeDigest: NOT_RUN
+changedPaths: []
+diffEvidence: null
+invariants:
+  - name: Static landing returns N/A
+    state: NOT_RUN
+    evidence: No real host run has been recorded.
+  - name: N/A creates no files
+    state: NOT_RUN
+    evidence: No real host run has been recorded.
+notes:
+  - Copilot surface and model must be recorded before changing status.

@@ -1,0 +1,16 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: build-local-harness
+cases:
+  - id: static-safe-harness
+    fixture: static-landing
+    mode: APPLY
+    parameters:
+      DATA_MODE: READ_ONLY
+      ALLOW_CONTAINERS: false
+      ALLOW_INSTALL: false
+    expectApplicability: APPLICABLE
+    allowedWrites: [HARNESS.md, docs/harness/**, scripts/verify-*]
+    invariants:
+      - Static build or link checks are considered.
+      - Database and API checks are N/A.
+      - No service, install, or external data is used.

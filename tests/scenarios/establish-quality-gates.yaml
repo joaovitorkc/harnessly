@@ -1,0 +1,20 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: establish-quality-gates
+cases:
+  - id: preserve-manager-and-baseline
+    fixture: js-ts-monorepo
+    mode: APPLY
+    parameters:
+      STRICTNESS: PROGRESSIVE
+      ALLOW_DEPENDENCY_CHANGES: false
+      ALLOW_FORMAT_CHURN: false
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - docs/harness/quality-gates.md
+      - package.json
+      - "**/scripts/verify-*"
+    invariants:
+      - pnpm remains the only manager for the workspace.
+      - Existing violations are measured before becoming blocking.
+      - Aggregate verification propagates child failures.
+      - Existing files are not mass-formatted.

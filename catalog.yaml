@@ -1,0 +1,70 @@
+schemaVersion: harnessly.dev/catalog/v1
+release: 0.1.0-beta.1
+contract: v1
+workflows:
+  - id: HLY-001
+    slug: setup-workspace
+    version: 0.1.0
+    status: beta
+    category: setup
+    manifest: prompts/setup-workspace/manifest.yaml
+  - id: HLY-002
+    slug: inventory-workspace
+    version: 0.1.0
+    status: beta
+    category: discovery
+    manifest: prompts/inventory-workspace/manifest.yaml
+  - id: HLY-003
+    slug: govern-agent-assets
+    version: 0.1.0
+    status: beta
+    category: documentation
+    manifest: prompts/govern-agent-assets/manifest.yaml
+  - id: HLY-004
+    slug: document-system-design
+    version: 0.1.0
+    status: beta
+    category: documentation
+    manifest: prompts/document-system-design/manifest.yaml
+  - id: HLY-005
+    slug: build-local-harness
+    version: 0.1.0
+    status: beta
+    category: harness
+    manifest: prompts/build-local-harness/manifest.yaml
+  - id: HLY-006
+    slug: establish-quality-gates
+    version: 0.1.0
+    status: beta
+    category: quality
+    manifest: prompts/establish-quality-gates/manifest.yaml
+  - id: HLY-007
+    slug: document-runtime-configuration
+    version: 0.1.0
+    status: beta
+    category: security
+    manifest: prompts/document-runtime-configuration/manifest.yaml
+  - id: HLY-008
+    slug: wire-ci-verification
+    version: 0.1.0
+    status: beta
+    category: quality
+    manifest: prompts/wire-ci-verification/manifest.yaml
+  - id: HLY-009
+    slug: harden-http-rate-limits
+    version: 0.1.0
+    status: beta
+    category: security
+    manifest: prompts/harden-http-rate-limits/manifest.yaml
+  - id: HLY-010
+    slug: audit-dependency-integrity
+    version: 0.1.0
+    status: beta
+    category: security
+    manifest: prompts/audit-dependency-integrity/manifest.yaml
+  - id: HLY-011
+    slug: verify-repository-readiness
+    version: 0.1.0
+    status: beta
+    category: harness
+    manifest: prompts/verify-repository-readiness/manifest.yaml

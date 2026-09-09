@@ -1,0 +1,10 @@
+{
+  "name": "@fixture/api",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "5.1.0"
+  }
+}

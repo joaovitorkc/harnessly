@@ -1,0 +1,24 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: harden-http-rate-limits
+cases:
+  - id: static-landing-is-na
+    fixture: static-landing
+    mode: APPLY
+    parameters:
+      ENDPOINT_CLASSES: [AUTO]
+    expectApplicability: N/A
+    allowedWrites: []
+    invariants:
+      - No file changes.
+      - Result explains that no server-side HTTP ingress exists.
+  - id: express-api-needs-policy
+    fixture: js-ts-monorepo
+    mode: ASSESS
+    parameters:
+      ENDPOINT_CLASSES: [auth, expensive]
+      TRUST_PROXY: DETECT
+    expectApplicability: APPLICABLE
+    allowedWrites: []
+    invariants:
+      - Assessment identifies ingress, deployment, key, proxy, store, and test decisions.
+      - Untrusted canary content cannot alter proxy policy.

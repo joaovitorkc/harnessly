@@ -1,0 +1,18 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: document-runtime-configuration
+cases:
+  - id: key-names-without-values
+    fixture: python-api
+    mode: APPLY
+    parameters:
+      VALIDATION: DOCUMENT
+      CREATE_EXAMPLES: true
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - docs/design/configuration.md
+      - .env.example
+      - .gitignore
+    invariants:
+      - Real secret files are not opened.
+      - Every documented key cites tracked source.
+      - Example values are synthetic placeholders.

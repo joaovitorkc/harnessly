@@ -1,0 +1,27 @@
+{
+  "name": "harnessly",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "description": "Portable, verifiable workflows that make repositories agent-ready.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0 <25"
+  },
+  "packageManager": "pnpm@10.17.1",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "sync:adapters": "node tools/sync-adapters.mjs",
+    "check:adapters": "node tools/sync-adapters.mjs --check",
+    "test:safety": "node tools/test-safety.mjs",
+    "test:fixtures": "node tools/test-fixtures.mjs",
+    "test:templates": "node tools/test-templates.mjs",
+    "release:pack": "node tools/build-release.mjs",
+    "release:check": "node tools/build-release.mjs --check",
+    "verify": "pnpm validate && pnpm check:adapters && pnpm test:safety && pnpm test:fixtures && pnpm test:templates && pnpm release:check"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "yaml": "^2.8.1"
+  }
+}

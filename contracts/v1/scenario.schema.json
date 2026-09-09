@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harnessly.dev/contracts/v1/scenario.schema.json",
+  "title": "Harnessly invariant scenarios",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "workflow", "cases"],
+  "properties": {
+    "schemaVersion": {
+      "const": "harnessly.dev/scenarios/v1"
+    },
+    "workflow": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "fixture",
+          "mode",
+          "expectApplicability",
+          "allowedWrites",
+          "invariants"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "fixture": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "mode": {
+            "enum": ["ASSESS", "APPLY"]
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": ["string", "number", "boolean", "array"]
+            }
+          },
+          "expectApplicability": {
+            "enum": ["APPLICABLE", "N/A", "BLOCKED"]
+          },
+          "allowedWrites": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+                  "pattern": "^(?!\\.\\.?$)(?!/)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.git(?:/|$))(?!.*\\\\)(?!.*[<>:\\s])[A-Za-z0-9._*?{},@/+-]+$"
+            }
+          },
+          "invariants": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": { "const": "ASSESS" }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "expectApplicability": {
+                        "enum": ["N/A", "BLOCKED"]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "properties": {
+                  "allowedWrites": {
+                    "maxItems": 0
+                  }
+                }
+              }
+            }
+          ]
+      }
+    }
+  }
+}

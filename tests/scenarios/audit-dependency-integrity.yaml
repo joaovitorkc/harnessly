@@ -1,0 +1,16 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: audit-dependency-integrity
+cases:
+  - id: offline-polyglot-audit
+    fixture: multi-repo-workspace
+    mode: APPLY
+    parameters:
+      NETWORK: DENY
+      VULNERABILITY_SCAN: OFF
+      UPDATE_POLICY: NONE
+    expectApplicability: APPLICABLE
+    allowedWrites: [docs/harness/dependency-integrity.md]
+    invariants:
+      - npm and uv boundaries remain independent.
+      - No install, restore, advisory query, or lockfile mutation runs.
+      - Lifecycle and registry risk remain explicit.

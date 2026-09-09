@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harnessly.dev/contracts/v1/prompt.schema.json",
+  "title": "Harnessly prompt manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "slug",
+    "version",
+    "status",
+    "title",
+    "summary",
+    "category",
+    "entrypoint",
+    "guide",
+    "modes",
+    "parameters",
+    "applicability",
+    "capabilities",
+    "risk",
+    "effects",
+    "requires",
+    "verification",
+    "compatibility"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "harnessly.dev/prompt/v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^HLY-[0-9]{3}$"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
+    },
+    "status": {
+      "enum": ["draft", "beta", "stable", "deprecated", "retired"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 100
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 240
+    },
+    "category": {
+      "enum": ["setup", "discovery", "documentation", "harness", "quality", "security"]
+    },
+    "entrypoint": {
+      "const": "PROMPT.md"
+    },
+    "guide": {
+      "type": "string",
+      "pattern": "^\\.\\./\\.\\./docs/prompts/[a-z0-9-]+\\.md$"
+    },
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "supported"],
+      "properties": {
+        "default": {
+          "const": "ASSESS"
+        },
+        "supported": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "ASSESS" },
+            { "const": "APPLY" }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/parameter"
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signals", "notApplicableWhen"],
+      "properties": {
+        "signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 2 }
+        },
+        "notApplicableWhen": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assess", "apply"],
+      "properties": {
+        "assess": { "$ref": "#/$defs/readCapabilityList" },
+        "apply": { "$ref": "#/$defs/capabilityList" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assess", "apply", "ceiling"],
+      "properties": {
+        "assess": { "const": "R0" },
+        "apply": { "enum": ["R1", "R2"] },
+        "ceiling": { "enum": ["R1", "R2", "R3", "R4"] }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation", "paths", "ownership", "authorization"],
+        "properties": {
+          "operation": {
+            "enum": ["create", "modify", "install", "execute", "network-read"]
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!\\.\\.?$)(?!/)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.git(?:/|$))(?!.*\\\\)(?!.*[<>:\\s])[A-Za-z0-9._*?{},@/+-]+$"
+            }
+          },
+          "commands": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9.-]+$"
+            }
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          },
+          "gateWhen": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          },
+          "ownership": {
+            "enum": ["none", "create-only", "managed-block", "owned-file", "structural-merge", "source-patch"]
+          },
+          "authorization": {
+            "enum": ["MODE_APPLY", "HUMAN_GATE", "MANUAL_ONLY"]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "operation": {
+                  "enum": ["execute", "network-read"]
+                }
+              }
+            },
+            "then": {
+              "required": ["commands"],
+              "properties": {
+                "paths": {
+                  "maxItems": 0
+                },
+                "commands": {
+                  "minItems": 1
+                },
+                "ownership": {
+                  "const": "none"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "paths": {
+                  "minItems": 1
+                },
+                "commands": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "operation": {
+                  "const": "install"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "authorization": {
+                  "const": "HUMAN_GATE"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "ownership": {
+                  "const": "source-patch"
+                }
+              }
+            },
+            "then": {
+              "required": ["conditions"],
+              "properties": {
+                "operation": {
+                  "enum": ["modify", "install"]
+                },
+                "conditions": {
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "ownership": {
+                  "const": "managed-block"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "const": "modify"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "ownership": {
+                  "const": "owned-file"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": ["create", "modify"]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "ownership": {
+                  "const": "create-only"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "const": "create"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "ownership": {
+                  "const": "structural-merge"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": ["modify", "install"]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": ["gateWhen"]
+            },
+            "then": {
+              "properties": {
+                "authorization": {
+                  "const": "MODE_APPLY"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "requires": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "verification": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 4 }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["portableCore", "adapters"],
+      "properties": {
+        "portableCore": {
+          "const": "markdown"
+        },
+        "adapters": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["agents-md", "agent-skills", "cursor", "claude-code", "github-copilot", "generic"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "required", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "type": {
+          "enum": ["string", "boolean", "integer", "enum", "path", "glob-list", "string-list"]
+        },
+        "required": { "type": "boolean" },
+        "default": {},
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": ["string", "number", "boolean"]
+          }
+        },
+        "description": {
+          "type": "string",
+          "minLength": 5
+        },
+        "sensitive": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "capabilityList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "fs.read",
+          "fs.write-declared",
+          "git.read",
+          "format.parse",
+          "shell.readonly",
+          "shell.verify",
+          "network.public-read",
+          "dependency.modify",
+          "ci.modify"
+        ]
+      }
+    },
+    "readCapabilityList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "fs.read",
+          "git.read",
+          "format.parse",
+          "shell.readonly"
+        ]
+      }
+    }
+  }
+}

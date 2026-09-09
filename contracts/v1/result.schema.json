@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harnessly.dev/contracts/v1/result.schema.json",
+  "title": "Harnessly workflow result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workflow",
+    "version",
+    "mode",
+    "applicability",
+    "status",
+    "target",
+    "evidence",
+    "changes",
+    "gates",
+    "checks",
+    "unverified",
+    "residualRisks"
+  ],
+  "properties": {
+    "workflow": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
+    },
+    "mode": {
+      "enum": ["ASSESS", "APPLY"]
+    },
+    "profile": {
+      "enum": ["STANDARD", "ADVANCED"]
+    },
+    "topology": {
+      "enum": ["REPO_ROOT", "EMBEDDED", "PARENT_HUB", "N/A"]
+    },
+    "applicability": {
+      "enum": ["APPLICABLE", "N/A", "BLOCKED"]
+    },
+    "status": {
+      "enum": ["ASSESSED", "APPLIED", "NO_CHANGE", "BLOCKED", "PARTIAL", "FAILED"]
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/note" }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "action", "reason"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.git(?:/|$))(?!.*\\\\).+$"
+          },
+          "action": {
+            "enum": ["planned-create", "planned-modify", "created", "modified", "unchanged", "skipped"]
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/gate"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "state", "evidence"],
+        "properties": {
+          "name": { "type": "string" },
+          "state": { "enum": ["PASS", "FAIL", "NOT_RUN", "BLOCKED", "N/A", "STALE"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "unverified": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "residualRisks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nextCommand": {
+      "type": "string"
+    },
+    "details": {
+      "type": "object",
+      "description": "Workflow-specific, non-authoritative result details.",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "source", "confidence"],
+      "properties": {
+        "claim": { "type": "string" },
+        "source": { "type": "string" },
+        "confidence": { "enum": ["high", "medium", "low"] }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk",
+        "state",
+        "action",
+        "target",
+        "preconditions",
+        "impact",
+        "rollback",
+        "verification"
+      ],
+      "properties": {
+        "risk": { "enum": ["R1", "R2", "R3", "R4"] },
+        "state": {
+          "enum": [
+            "not-needed",
+            "pending",
+            "approved",
+            "denied",
+            "expired",
+            "manual-only"
+          ]
+        },
+        "action": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "preconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "impact": { "type": "string", "minLength": 1 },
+        "rollback": { "type": "string", "minLength": 1 },
+        "verification": { "type": "string", "minLength": 1 },
+        "authorizationEvidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": { "const": "approved" }
+            }
+          },
+          "then": {
+            "required": ["authorizationEvidence"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "risk": { "const": "R4" }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "not-needed",
+                  "pending",
+                  "denied",
+                  "expired",
+                  "manual-only"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "ASSESS" }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": ["ASSESSED", "BLOCKED", "FAILED"]
+          },
+          "changes": {
+            "items": {
+              "properties": {
+                "action": {
+                  "enum": ["planned-create", "planned-modify", "unchanged", "skipped"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "ASSESSED" }
+        }
+      },
+      "then": {
+        "properties": {
+          "mode": { "const": "ASSESS" },
+          "evidence": { "minItems": 1 },
+          "checks": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "applicability": { "const": "N/A" }
+        }
+      },
+      "then": {
+        "properties": {
+          "evidence": { "minItems": 1 },
+          "changes": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "applicability": {
+            "enum": ["N/A", "BLOCKED"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": ["ASSESSED", "NO_CHANGE", "BLOCKED", "PARTIAL", "FAILED"]
+          },
+          "changes": {
+            "items": {
+              "properties": {
+                "action": {
+                  "enum": ["planned-create", "planned-modify", "unchanged", "skipped"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "APPLIED" }
+        }
+      },
+      "then": {
+        "properties": {
+          "mode": { "const": "APPLY" },
+          "applicability": { "const": "APPLICABLE" },
+          "evidence": {
+            "minItems": 1
+          },
+          "changes": {
+            "minItems": 1,
+            "contains": {
+              "properties": {
+                "action": {
+                  "enum": ["created", "modified"]
+                }
+              },
+              "required": ["action"]
+            }
+          },
+          "gates": {
+            "additionalProperties": {
+              "properties": {
+                "state": {
+                  "enum": ["not-needed", "approved"]
+                }
+              }
+            }
+          },
+          "checks": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "state": {
+                  "enum": ["PASS", "N/A"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+schemaVersion: harnessly.dev/fixtures/v1
+fixtures:
+  - id: js-ts-monorepo
+    root: tests/fixtures/js-ts-monorepo
+    expected:
+      ecosystems: [javascript-typescript]
+      packageManagers: [pnpm]
+      manifests:
+        - apps/web/package.json
+        - package.json
+        - services/api/package.json
+      rateLimit: APPLICABLE
+  - id: python-api
+    root: tests/fixtures/python-api
+    expected:
+      ecosystems: [python]
+      packageManagers: [uv]
+      manifests: [pyproject.toml]
+      rateLimit: APPLICABLE
+  - id: go-service
+    root: tests/fixtures/go-service
+    expected:
+      ecosystems: [go]
+      packageManagers: [go-modules]
+      manifests: [go.mod]
+      rateLimit: BLOCKED
+  - id: rust-cli
+    root: tests/fixtures/rust-cli
+    expected:
+      ecosystems: [rust]
+      packageManagers: [cargo]
+      manifests: [Cargo.toml]
+      rateLimit: N/A
+  - id: java-service
+    root: tests/fixtures/java-service
+    expected:
+      ecosystems: [java]
+      packageManagers: [maven]
+      manifests: [pom.xml]
+      rateLimit: N/A
+  - id: dotnet-service
+    root: tests/fixtures/dotnet-service
+    expected:
+      ecosystems: [dotnet]
+      packageManagers: [nuget]
+      manifests: [Fixture.Api.csproj]
+      rateLimit: BLOCKED
+  - id: static-landing
+    root: tests/fixtures/static-landing
+    expected:
+      ecosystems: [static-web]
+      packageManagers: []
+      manifests: [index.html]
+      rateLimit: N/A
+  - id: multi-repo-workspace
+    root: tests/fixtures/multi-repo-workspace
+    expected:
+      ecosystems: [javascript-typescript, python]
+      packageManagers: [npm, uv]
+      manifests:
+        - repos/api/pyproject.toml
+        - repos/web/package.json
+      rateLimit: N/A

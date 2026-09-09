@@ -1,0 +1,42 @@
+schemaVersion: harnessly.dev/profile/v1
+name: ADVANCED
+version: 0.1.0
+description: Create a non-destructive orchestrator control plane for one repository or a parent multi-repository workspace.
+topologies:
+  - EMBEDDED
+  - PARENT_HUB
+controlPlane: orchestrator
+invariants:
+  - Never copy, move, rename, vendor, or nest product repositories.
+  - Every registered project path is relative and resolves to a declared Git root.
+  - Every project path resolves inside projects.yaml authorizedRoot after symlink resolution.
+  - EMBEDDED registers the current repository as ..
+  - PARENT_HUB registers selected sibling repositories from their common parent.
+  - The control plane does not become a source-code build root.
+  - Git initialization and remote changes are outside setup.
+artifacts:
+  - path: orchestrator/AGENTS.md
+    when: The control-plane path does not collide with unmanaged content.
+    ownership: create-only
+    existingOwnership: [managed-block, owned-file]
+  - path: orchestrator/CLAUDE.md
+    when: Claude Code is selected.
+    ownership: create-only
+    existingOwnership: [owned-file]
+  - path: orchestrator/DESIGN.md
+    when: Topology and ownership boundaries have been confirmed.
+    ownership: create-only
+    existingOwnership: [owned-file]
+  - path: orchestrator/HARNESS.md
+    when: Per-project sensors can be referenced truthfully.
+    ownership: create-only
+    existingOwnership: [owned-file]
+  - path: orchestrator/projects.yaml
+    when: Every selected repository root is reachable by a stable relative path.
+    ownership: structural-merge
+  - path: orchestrator/docs/
+    when: Cross-project routing, tasks, decisions, or policies are applicable.
+    ownership: owned-file
+  - path: orchestrator/.agents/skills/
+    when: Cross-project workflows are detected.
+    ownership: create-only

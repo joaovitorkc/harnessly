@@ -1,0 +1,68 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-004
+slug: document-system-design
+version: 0.1.0
+status: beta
+title: Document system design from repository evidence
+summary: Create concise architecture, boundary, runtime, interface, deployment, and decision documentation without presenting inference as fact.
+category: documentation
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/document-system-design.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Project or registered workspace root to document.
+  - name: DEPTH
+    type: enum
+    required: false
+    default: AUTO
+    values: [AUTO, BASELINE, DEEP]
+    description: Select concise baseline or evidence-backed deeper mapping.
+  - name: FOCUS
+    type: string-list
+    required: false
+    default: [ALL]
+    description: Limit deeper analysis to named components or concerns.
+  - name: DIAGRAMS
+    type: enum
+    required: false
+    default: MERMAID
+    values: [MERMAID, NONE]
+    description: Include only diagrams supported by verified relationships.
+applicability:
+  signals:
+    - One or more project units with inspectable structure or configuration.
+  notApplicableWhen:
+    - The target has no system or process to document.
+capabilities:
+  assess: [fs.read, git.read]
+  apply: [fs.read, git.read, fs.write-declared]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R2
+effects:
+  - operation: create
+    paths: [DESIGN.md, docs/design/**, orchestrator/DESIGN.md, orchestrator/docs/design/**]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [DESIGN.md, docs/design/**, orchestrator/DESIGN.md, orchestrator/docs/design/**]
+    ownership: owned-file
+    authorization: MODE_APPLY
+requires: [inventory-workspace]
+verification:
+  - Every factual component and path is backed by repository evidence.
+  - Inferences and unknowns are labelled with confidence.
+  - Diagrams match the documented nodes and edges.
+  - Sensitive topology and values are excluded.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

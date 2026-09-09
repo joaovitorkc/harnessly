@@ -1,0 +1,10 @@
+{
+  "name": "@fixture/web",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "react": "19.1.1"
+  }
+}

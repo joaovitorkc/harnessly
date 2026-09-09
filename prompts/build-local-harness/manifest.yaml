@@ -1,0 +1,95 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-005
+slug: build-local-harness
+version: 0.1.0
+status: beta
+title: Build a truthful local development harness
+summary: Document and connect reproducible local startup, health, smoke, journey, cleanup, and completion checks using the project's real tooling.
+category: harness
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/build-local-harness.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Project or registered workspace root.
+  - name: DATA_MODE
+    type: enum
+    required: false
+    default: READ_ONLY
+    values: [READ_ONLY, EPHEMERAL]
+    description: Restrict data access to read-only or isolated disposable state.
+  - name: ALLOW_CONTAINERS
+    type: boolean
+    required: false
+    default: false
+    description: Permit documenting a manual container-based local dependency proposal.
+  - name: ALLOW_INSTALL
+    type: boolean
+    required: false
+    default: false
+    description: Permit documenting a manual dependency-install proposal during apply.
+  - name: TIMEOUT_SECONDS
+    type: integer
+    required: false
+    default: 120
+    description: Maximum time for each verification command.
+applicability:
+  signals:
+    - At least one project unit has a local build, preview, test, validation, or startup surface.
+  notApplicableWhen:
+    - The target contains no executable or statically verifiable artifact.
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, shell.readonly, fs.write-declared, shell.verify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths: [HARNESS.md, docs/harness/**, scripts/verify-*, orchestrator/HARNESS.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [HARNESS.md, docs/harness/**, scripts/verify-*, orchestrator/HARNESS.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - "**/package.json"
+      - "**/pyproject.toml"
+      - "**/Taskfile.yml"
+      - "**/Taskfile.yaml"
+    ownership: structural-merge
+    authorization: HUMAN_GATE
+  - operation: modify
+    paths:
+      - "**/Makefile"
+      - "**/justfile"
+    conditions:
+      - The exact verification target and existing file ownership are unambiguous.
+    ownership: source-patch
+    authorization: HUMAN_GATE
+  - operation: execute
+    paths: []
+    commands: [project.verify, project.smoke]
+    conditions:
+      - Each command satisfies the restricted shell.verify execution envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: [inventory-workspace, document-system-design]
+verification:
+  - Every documented command exists and records its working directory and prerequisites.
+  - The canonical sensor is non-interactive and fails on any mandatory failed check.
+  - Cleanup leaves no untracked runtime data outside declared ignored paths.
+  - Unsafe or unavailable journeys remain explicit.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

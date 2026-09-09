@@ -1,0 +1,126 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-009
+slug: harden-http-rate-limits
+version: 0.1.0
+status: beta
+title: Harden owned HTTP ingress with rate limits
+summary: Assess and implement framework-native rate limiting only for server-side HTTP ingress with a proven identity, proxy, deployment, store, and test strategy.
+category: security
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/harden-http-rate-limits.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Service or workspace root to assess.
+  - name: ENDPOINT_CLASSES
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Select public, auth, authenticated, expensive, webhook, or internal ingress.
+  - name: STORE
+    type: enum
+    required: false
+    default: AUTO
+    values: [AUTO, MEMORY, EXISTING_SHARED]
+    description: Use memory for one process or document an existing shared-store abstraction without connecting to it.
+  - name: FAIL_MODE
+    type: enum
+    required: false
+    default: CLOSED_FOR_AUTH
+    values: [CLOSED_FOR_AUTH, OPEN_WITH_SIGNAL]
+    description: Define behavior when a limiter store is unavailable.
+  - name: TRUST_PROXY
+    type: enum
+    required: false
+    default: DETECT
+    values: [DETECT, DIRECT, CONFIGURED]
+    description: Require evidence before trusting forwarded client addresses.
+applicability:
+  signals:
+    - An owned server-side HTTP ingress and test surface exist.
+  notApplicableWhen:
+    - The target is static, client-only, documentation-only, or owns no HTTP server ingress.
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, shell.readonly, fs.write-declared, shell.verify, dependency.modify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R4
+effects:
+  - operation: modify
+    paths:
+      - "**/*.{js,jsx,ts,tsx,mjs,cjs,py,go,rs,java,kt,cs}"
+      - "**/test/**"
+      - "**/tests/**"
+      - "**/*.test.*"
+      - "**/*.spec.*"
+      - "**/env.schema.*"
+      - "**/config.schema.*"
+    conditions:
+      - Only the proven owned server ingress, selected route classes, focused tests, and existing config schema are eligible.
+    gateWhen:
+      - Choosing or changing rate-limit policy numbers requires a human gate.
+      - Changing proxy trust requires a human gate.
+      - Changing behavior on auth, webhook, health, or internal routes requires a human gate.
+    ownership: source-patch
+    authorization: MODE_APPLY
+  - operation: create
+    paths: [docs/design/rate-limiting.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/design/rate-limiting.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: install
+    paths:
+      - "**/package.json"
+      - "**/package-lock.json"
+      - "**/pnpm-lock.yaml"
+      - "**/yarn.lock"
+      - "**/bun.lock"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - "**/poetry.lock"
+      - "**/requirements*.txt"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "**/pom.xml"
+      - "**/*.csproj"
+      - "**/packages.lock.json"
+    ownership: structural-merge
+    authorization: HUMAN_GATE
+  - operation: install
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+    conditions:
+      - The exact dependency declaration and lifecycle behavior are reviewed in the gate.
+    ownership: source-patch
+    authorization: HUMAN_GATE
+  - operation: execute
+    paths: []
+    commands: [project.rate-limit-tests, project.verify]
+    conditions:
+      - Tests use isolated in-process fakes or local disposable state and satisfy the restricted shell.verify envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: [inventory-workspace, document-system-design, build-local-harness, document-runtime-configuration]
+verification:
+  - Static and client-only targets return N/A without writes.
+  - Below-limit requests pass and over-limit requests return the documented response.
+  - Identity keys, proxy trust, window reset, exemptions, and store failure are tested.
+  - Multi-instance deployment never uses an uncoordinated in-memory limit as a production claim.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

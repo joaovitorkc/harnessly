@@ -1,0 +1,155 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-006
+slug: establish-quality-gates
+version: 0.1.0
+status: beta
+title: Establish progressive quality gates
+summary: Build one truthful verification path from existing stack-native lint, type, test, build, and policy checks without creating an unusable red baseline.
+category: quality
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/establish-quality-gates.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Repository or workspace whose gates will be assessed.
+  - name: GATES
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Select lint, types, tests, build, links, or stack-native checks.
+  - name: STRICTNESS
+    type: enum
+    required: false
+    default: PROGRESSIVE
+    values: [PRESERVE, PROGRESSIVE, STRICT]
+    description: Preserve existing behavior or introduce evidence-based baselines.
+  - name: ALLOW_DEPENDENCY_CHANGES
+    type: boolean
+    required: false
+    default: false
+    description: Permit proposing a separately gated quality-tool dependency change.
+  - name: ALLOW_FORMAT_CHURN
+    type: boolean
+    required: false
+    default: false
+    description: Permit formatting existing files; false by default.
+applicability:
+  signals:
+    - At least one project unit supports a static, test, compile, build, or link check.
+  notApplicableWhen:
+    - The target has no locally verifiable artifact.
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, shell.readonly, fs.write-declared, shell.verify, dependency.modify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: modify
+    paths:
+      - "**/package.json"
+      - "**/pyproject.toml"
+      - "**/go.mod"
+      - "**/Cargo.toml"
+      - "**/pom.xml"
+      - "**/*.csproj"
+      - "**/*.sln"
+      - "**/tsconfig*.json"
+      - "**/ruff.toml"
+      - "**/.golangci.y*ml"
+    conditions:
+      - MODE_APPLY may compose existing checks but may not add dependencies or widen existing severity without a gate.
+    gateWhen:
+      - Changing existing severity through a structural merge requires a human gate.
+    ownership: structural-merge
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+      - "**/.eslintrc*"
+      - "**/eslint.config.*"
+    conditions:
+      - The exact configuration construct and existing ownership are unambiguous.
+    gateWhen:
+      - Changing existing severity or broad tool behavior through a source patch requires a human gate.
+    ownership: source-patch
+    authorization: MODE_APPLY
+  - operation: create
+    paths:
+      - "**/.eslintrc*"
+      - "**/eslint.config.*"
+      - "**/ruff.toml"
+      - "**/.golangci.y*ml"
+    conditions:
+      - A specific broad-configuration gate is approved and the path is absent.
+    ownership: create-only
+    authorization: HUMAN_GATE
+  - operation: create
+    paths: ["**/scripts/verify-*"]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: ["**/scripts/verify-*"]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: create
+    paths: [docs/harness/quality-gates.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/harness/quality-gates.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: install
+    paths:
+      - "**/package.json"
+      - "**/package-lock.json"
+      - "**/pnpm-lock.yaml"
+      - "**/yarn.lock"
+      - "**/bun.lock"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - "**/poetry.lock"
+      - "**/requirements*.txt"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "**/pom.xml"
+      - "**/*.csproj"
+      - "**/packages.lock.json"
+    ownership: structural-merge
+    authorization: HUMAN_GATE
+  - operation: install
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+    conditions:
+      - The exact dependency declaration and lifecycle behavior are reviewed in the gate.
+    ownership: source-patch
+    authorization: HUMAN_GATE
+  - operation: execute
+    paths: []
+    commands: [project.quality-baseline, project.verify]
+    conditions:
+      - Each command satisfies the restricted shell.verify execution envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: [inventory-workspace, build-local-harness]
+verification:
+  - Every gate is supported by the detected stack and has a source or explicit rationale.
+  - Existing violations are measured before severity changes.
+  - Fast and expensive checks remain separate.
+  - The canonical command fails when a mandatory child check fails.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

@@ -1,0 +1,29 @@
+workflow: setup-workspace
+version: 0.1.0
+mode: ASSESS
+profile: STANDARD
+topology: REPO_ROOT
+applicability: APPLICABLE
+status: ASSESSED
+target: .
+evidence:
+  - claim: The target is a pnpm workspace.
+    source: pnpm-workspace.yaml
+    confidence: high
+changes:
+  - path: AGENTS.md
+    action: planned-create
+    reason: No portable repository entrypoint exists.
+gates: {}
+checks:
+  - name: Workspace manifest discovery
+    state: PASS
+    evidence: package.json and pnpm-workspace.yaml were read without mutation.
+  - name: Project verification
+    state: NOT_RUN
+    evidence: ASSESS does not execute project commands.
+unverified:
+  - Runtime behavior and native host precedence were not exercised.
+residualRisks:
+  - A coding-agent host may not enforce Markdown instructions.
+nextCommand: Rerun with MODE=APPLY after reviewing the proposed paths.

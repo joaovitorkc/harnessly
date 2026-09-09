@@ -1,0 +1,72 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-011
+slug: verify-repository-readiness
+version: 0.1.0
+status: beta
+title: Verify repository readiness for agent-assisted work
+summary: Audit identity, context, documentation, harness, quality, security, CI, and evidence freshness without converting skipped checks into a green result.
+category: harness
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/verify-repository-readiness.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Repository or orchestrator root to verify.
+  - name: REQUIRED_WORKFLOWS
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Workflow IDs required by policy or inferred applicability.
+  - name: RUN_EXPENSIVE
+    type: boolean
+    required: false
+    default: false
+    description: Permit already documented expensive local checks during apply.
+  - name: EVIDENCE_MAX_AGE_DAYS
+    type: integer
+    required: false
+    default: 30
+    description: Mark older observed evidence stale.
+applicability:
+  signals:
+    - Any repository or orchestrator can be assessed for agent readiness.
+  notApplicableWhen: []
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, shell.readonly, fs.write-declared, shell.verify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths: [docs/harness/readiness.md, orchestrator/docs/harness/readiness.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/harness/readiness.md, orchestrator/docs/harness/readiness.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: execute
+    paths: []
+    commands: [project.verify, project.verify-expensive]
+    conditions:
+      - Each command satisfies the restricted shell.verify execution envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: []
+verification:
+  - Every applicable criterion has current evidence or a non-passing state.
+  - NOT_RUN, BLOCKED, N/A, and stale remain distinct.
+  - Existing failures are not attributed to the readiness workflow.
+  - The final grade can be reproduced from listed criteria.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

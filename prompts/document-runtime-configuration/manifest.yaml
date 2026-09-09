@@ -1,0 +1,92 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-007
+slug: document-runtime-configuration
+version: 0.1.0
+status: beta
+title: Document runtime configuration without exposing secrets
+summary: Map environment-key names and configuration sources, classify sensitivity and scope, and create sanitized examples without opening real secret files.
+category: security
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/document-runtime-configuration.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Project or registered workspace root.
+  - name: ENVIRONMENTS
+    type: string-list
+    required: false
+    default: [local, test, production]
+    description: Environment names to describe without reading their secret values.
+  - name: VALIDATION
+    type: enum
+    required: false
+    default: DOCUMENT
+    values: [DOCUMENT, ENFORCE_EXISTING]
+    description: Document keys or connect an already present validator.
+  - name: CREATE_EXAMPLES
+    type: boolean
+    required: false
+    default: true
+    description: Create sanitized example files when ownership is clear.
+applicability:
+  signals:
+    - Source or configuration references runtime environment keys, config files, flags, or external services.
+  notApplicableWhen:
+    - The target has no runtime or build-time configuration.
+capabilities:
+  assess: [fs.read, git.read]
+  apply: [fs.read, git.read, format.parse, fs.write-declared]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths: [docs/design/configuration.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/design/configuration.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: create
+    paths:
+      - .env.example
+      - "**/.env.example"
+      - "**/config.example.*"
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - .gitignore
+      - "**/.gitignore"
+      - "**/config.schema.json"
+      - "**/config.schema.yaml"
+      - "**/config.schema.yml"
+      - "**/config.schema.toml"
+    conditions:
+      - Existing validation structure and key ownership are unambiguous.
+    ownership: structural-merge
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: ["**/env.schema.*"]
+    conditions:
+      - The exact validation construct and key ownership are unambiguous.
+    ownership: source-patch
+    authorization: MODE_APPLY
+requires: [inventory-workspace, document-system-design]
+verification:
+  - Every documented key has a source reference.
+  - Example values are placeholders and contain no detected secret.
+  - Public and server-only keys are distinguished.
+  - Real secret files remain unread and unchanged.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

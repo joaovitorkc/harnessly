@@ -1,0 +1,41 @@
+schemaVersion: harnessly.dev/capabilities/v1
+capabilities:
+  fs.read:
+    effect: read
+    description: Read non-sensitive files inside the selected target roots.
+  fs.write-declared:
+    effect: write
+    description: Create or modify only paths declared by the workflow.
+  git.read:
+    effect: read
+    description: Use Git commands for status, tracked paths, roots, and scoped non-secret diffs without traversing .git objects directly.
+  format.parse:
+    effect: read
+    description: Parse data files without importing or executing repository code.
+  shell.readonly:
+    effect: read
+    description: Run OS, Git, or tool-version queries that do not execute repository code.
+  shell.verify:
+    effect: local
+    description: Run an inspected declared project check inside the restricted execution envelope in execution-contract.md.
+  network.public-read:
+    effect: network-read
+    description: Read public immutable metadata without credentials.
+  dependency.modify:
+    effect: write
+    description: Change dependency manifests or lockfiles after a scoped human gate.
+  ci.modify:
+    effect: write
+    description: Create or structurally merge a verification-only CI workflow.
+
+forbiddenInV1:
+  - git.commit
+  - git.push
+  - git.history-rewrite
+  - external.write
+  - production.access
+  - secrets.read
+  - shared-or-external-database.write
+  - infrastructure.mutate
+
+effectiveCapabilityRule: declared AND host-available AND platform-allowed AND user-authorized

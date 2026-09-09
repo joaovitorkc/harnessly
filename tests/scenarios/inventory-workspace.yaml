@@ -1,0 +1,15 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: inventory-workspace
+cases:
+  - id: polyglot-manifest-map
+    fixture: multi-repo-workspace
+    mode: APPLY
+    parameters:
+      SCOPE: ALL_REGISTERED
+    expectApplicability: APPLICABLE
+    allowedWrites: [docs/inventory/**]
+    invariants:
+      - JavaScript and Python units retain separate managers and boundaries.
+      - Every command cites a manifest or CI source.
+      - Untrusted canary content is not reported.
+      - Second render is unchanged.

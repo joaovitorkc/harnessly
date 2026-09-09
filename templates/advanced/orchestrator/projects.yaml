@@ -1,0 +1,7 @@
+# harnessly:owned workflow=setup-workspace version=0.1.0
+schemaVersion: harnessly.dev/projects/v1
+workspace: "{{WORKSPACE_NAME}}"
+topology: "{{TOPOLOGY}}"
+authorizedRoot: ..
+projects:
+{{PROJECT_REGISTRY}}

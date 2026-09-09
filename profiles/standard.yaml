@@ -1,0 +1,47 @@
+schemaVersion: harnessly.dev/profile/v1
+name: STANDARD
+version: 0.1.0
+description: Keep repository guidance, documentation, and verification close to the code they describe.
+topologies:
+  - REPO_ROOT
+controlPlane: .
+invariants:
+  - Do not create an orchestrator directory.
+  - Preserve existing repository and package instruction files.
+  - Scope package-specific guidance to the nearest package root.
+  - Create only artifacts justified by detected capabilities.
+artifacts:
+  - path: AGENTS.md
+    when: No portable root entrypoint exists, or a managed routing block is approved.
+    ownership: create-only
+    existingOwnership: [managed-block, owned-file]
+  - path: CLAUDE.md
+    when: Claude Code is selected and no conflicting entrypoint exists.
+    ownership: create-only
+    existingOwnership: [managed-block, owned-file]
+  - path: DESIGN.md
+    when: The repository has at least one software unit.
+    ownership: create-only
+    existingOwnership: [owned-file]
+  - path: HARNESS.md
+    when: At least one truthful local verification path can be documented.
+    ownership: create-only
+    existingOwnership: [owned-file]
+  - path: docs/design/
+    when: Multiple components, boundaries, or runtime flows need detail.
+    ownership: owned-file
+  - path: docs/harness/
+    when: Local journeys or more than one verification command exist.
+    ownership: owned-file
+  - path: docs/decisions/
+    when: Material architecture or product decisions need durable records.
+    ownership: owned-file
+  - path: docs/tasks/
+    when: Work spans multiple independently verifiable steps.
+    ownership: owned-file
+  - path: docs/learnings.md
+    when: Confirmed project-specific corrections need concise durable memory.
+    ownership: owned-file
+  - path: .agents/skills/
+    when: A repeatable project-specific workflow is detected.
+    ownership: create-only

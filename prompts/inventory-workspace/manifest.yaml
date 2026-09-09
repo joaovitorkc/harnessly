@@ -1,0 +1,67 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-002
+slug: inventory-workspace
+version: 0.1.0
+status: beta
+title: Inventory a repository or workspace
+summary: Map repositories, packages, stacks, package managers, commands, runtime roles, and uncertain boundaries without guessing.
+category: discovery
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/inventory-workspace.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Root whose project units may be inventoried.
+  - name: SCOPE
+    type: enum
+    required: false
+    default: CURRENT
+    values: [CURRENT, ALL_REGISTERED]
+    description: Inventory one repository or every project in an existing registry.
+  - name: MAX_DEPTH
+    type: integer
+    required: false
+    default: 6
+    description: Maximum directory depth for manifest discovery.
+  - name: INCLUDE_NESTED_REPOS
+    type: boolean
+    required: false
+    default: true
+    description: Include nested Git roots as separate inventory units.
+applicability:
+  signals:
+    - A project manifest, source unit, static site, infrastructure unit, or registered repository exists.
+  notApplicableWhen:
+    - The selected root has no project artifacts.
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, shell.readonly, fs.write-declared]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R2
+effects:
+  - operation: create
+    paths: [docs/inventory/**, orchestrator/docs/inventory/**]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/inventory/**, orchestrator/docs/inventory/**]
+    ownership: owned-file
+    authorization: MODE_APPLY
+requires: []
+verification:
+  - Every discovered manifest belongs to exactly one inventory unit.
+  - Workspace declarations and lockfiles reconcile with listed units.
+  - Commands cite their source and are not invented.
+  - Unknown roles and ambiguous boundaries remain explicit.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

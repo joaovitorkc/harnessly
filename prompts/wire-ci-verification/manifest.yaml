@@ -1,0 +1,104 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-008
+slug: wire-ci-verification
+version: 0.1.0
+status: beta
+title: Wire local verification into CI
+summary: Reuse the repository's canonical local checks in a least-privilege CI workflow without adding deployment, release, or secret-dependent behavior.
+category: quality
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/wire-ci-verification.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Repository root that owns CI configuration.
+  - name: PROVIDER
+    type: enum
+    required: false
+    default: AUTO
+    values: [AUTO, GITHUB_ACTIONS, EXISTING]
+    description: Select GitHub Actions or conservatively extend a recognized provider.
+  - name: TRIGGERS
+    type: string-list
+    required: false
+    default: [pull_request, push]
+    description: Events that should run verification only.
+  - name: RUNTIME_MATRIX
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Runtime versions proven by project manifests or existing CI.
+applicability:
+  signals:
+    - A canonical non-interactive local verification command exists.
+  notApplicableWhen:
+    - The repository has no CI provider and PROVIDER is EXISTING.
+capabilities:
+  assess: [fs.read, git.read]
+  apply: [fs.read, git.read, fs.write-declared, shell.verify, ci.modify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths: [.github/workflows/verify.yml]
+    gateWhen:
+      - Adding a third-party action requires an approved full commit SHA supplied by the user.
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: create
+    paths: [docs/harness/ci.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/harness/ci.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - .github/workflows/*.yml
+      - .github/workflows/*.yaml
+      - .gitlab-ci.yml
+      - azure-pipelines.yml
+      - .circleci/config.yml
+    conditions:
+      - The provider and verification job ownership are already unambiguous.
+    gateWhen:
+      - Replacing or materially restructuring an existing pipeline requires a human gate.
+      - Increasing runtime matrices or paid runner cost requires a human gate.
+      - Adding a third-party action requires an approved full commit SHA supplied by the user.
+    ownership: structural-merge
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [Jenkinsfile]
+    conditions:
+      - The Jenkins verification stage and file ownership are already unambiguous.
+    gateWhen:
+      - Replacing or materially restructuring an existing pipeline requires a human gate.
+      - Increasing runtime matrices or paid runner cost requires a human gate.
+    ownership: source-patch
+    authorization: MODE_APPLY
+  - operation: execute
+    paths: []
+    commands: [project.verify]
+    conditions:
+      - The local sensor satisfies the restricted shell.verify execution envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: [establish-quality-gates]
+verification:
+  - CI invokes the same canonical checks used locally.
+  - Workflow permissions are read-only unless a documented check requires less.
+  - Third-party actions are pinned to immutable commit SHAs.
+  - No deployment, release, secret, or write-token step is introduced.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

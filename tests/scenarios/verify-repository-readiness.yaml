@@ -1,0 +1,16 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: verify-repository-readiness
+cases:
+  - id: truthful-static-readiness
+    fixture: static-landing
+    mode: APPLY
+    parameters:
+      REQUIRED_WORKFLOWS: [AUTO]
+      RUN_EXPENSIVE: false
+      EVIDENCE_MAX_AGE_DAYS: 30
+    expectApplicability: APPLICABLE
+    allowedWrites: [docs/harness/readiness.md]
+    invariants:
+      - HTTP rate limiting is N/A rather than failed.
+      - Unrun checks do not produce READY.
+      - The grade is reproducible from criterion states.

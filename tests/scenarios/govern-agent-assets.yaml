@@ -1,0 +1,24 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: govern-agent-assets
+cases:
+  - id: canonical-portable-sources
+    fixture: js-ts-monorepo
+    mode: APPLY
+    parameters:
+      STRATEGY: CANONICALIZE
+      TARGET_AGENTS: [CURSOR, CLAUDE_CODE, GITHUB_COPILOT]
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - AGENTS.md
+      - .agents/skills/**
+      - .claude/skills/**
+      - .claude/agents/**
+      - .cursor/rules/**
+      - .github/copilot-instructions.md
+      - .github/prompts/**
+      - .github/agents/**
+      - docs/design/agent-assets.md
+    invariants:
+      - Existing unmanaged instructions are byte-preserved.
+      - Native adapters do not widen canonical authority.
+      - Each concern has one canonical source.

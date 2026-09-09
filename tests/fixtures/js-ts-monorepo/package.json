@@ -1,0 +1,8 @@
+{
+  "name": "fixture-js-ts-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "verify": "pnpm -r test"
+  }
+}

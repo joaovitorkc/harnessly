@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harnessly.dev/contracts/v1/fixture.schema.json",
+  "title": "Harnessly fixture catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "fixtures"],
+  "properties": {
+    "schemaVersion": {
+      "const": "harnessly.dev/fixtures/v1"
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "root", "expected"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "root": {
+            "type": "string",
+            "pattern": "^tests/fixtures/[a-z0-9-]+$"
+          },
+          "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ecosystems", "packageManagers", "manifests", "rateLimit"],
+            "properties": {
+              "ecosystems": {
+                "type": "array",
+                "items": { "type": "string" },
+                "uniqueItems": true
+              },
+              "packageManagers": {
+                "type": "array",
+                "items": { "type": "string" },
+                "uniqueItems": true
+              },
+              "manifests": {
+                "type": "array",
+                "items": { "type": "string" },
+                "uniqueItems": true
+              },
+              "rateLimit": {
+                "enum": ["APPLICABLE", "N/A", "BLOCKED"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

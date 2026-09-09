@@ -1,0 +1,11 @@
+schemaVersion: harnessly.dev/projects/v1
+workspace: synthetic-multi-repo
+topology: PARENT_HUB
+authorizedRoot: ..
+projects:
+  - id: web
+    path: ../repos/web
+    gitRoot: true
+  - id: api
+    path: ../repos/api
+    gitRoot: true

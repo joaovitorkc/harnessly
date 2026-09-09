@@ -1,0 +1,151 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-001
+slug: setup-workspace
+version: 0.1.0
+status: beta
+title: Set up an agent-ready workspace
+summary: Discover a repository or parent workspace and install only the applicable Standard or Advanced harness artifacts.
+category: setup
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/setup-workspace.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: PROFILE
+    type: enum
+    required: false
+    default: STANDARD
+    values: [STANDARD, ADVANCED]
+    description: Select in-repository guidance or an orchestrator control plane.
+  - name: TOPOLOGY
+    type: enum
+    required: false
+    default: AUTO
+    values: [AUTO, REPO_ROOT, EMBEDDED, PARENT_HUB]
+    description: Resolve the placement of setup artifacts.
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Limit discovery and writes to this root.
+  - name: TARGET_AGENTS
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Choose portable or vendor-specific instruction adapters.
+  - name: DOCS_LANGUAGE
+    type: enum
+    required: false
+    default: AUTO
+    values: [AUTO, EN, PT_BR]
+    description: Select the language of generated project documentation.
+applicability:
+  signals:
+    - A readable project repository or common parent workspace.
+  notApplicableWhen:
+    - The target contains no software, infrastructure, documentation, or managed configuration units.
+capabilities:
+  assess: [fs.read, git.read, format.parse, shell.readonly]
+  apply: [fs.read, git.read, format.parse, shell.readonly, fs.write-declared, shell.verify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - DESIGN.md
+      - HARNESS.md
+      - .agents/skills/**
+      - .claude/skills/**
+      - .claude/agents/**
+      - .cursor/rules/**
+      - .github/copilot-instructions.md
+      - .github/prompts/**
+      - .github/agents/**
+      - orchestrator/AGENTS.md
+      - orchestrator/CLAUDE.md
+      - orchestrator/DESIGN.md
+      - orchestrator/HARNESS.md
+      - orchestrator/projects.yaml
+      - orchestrator/.agents/skills/**
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: create
+    paths: ["**/AGENTS.md"]
+    conditions:
+      - Only a discovered package or project root outside generated, vendored, dependency, cache, and VCS paths is eligible.
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: create
+    paths:
+      - docs/design/**
+      - docs/harness/**
+      - docs/decisions/**
+      - docs/tasks/**
+      - docs/learnings.md
+      - orchestrator/docs/routing/**
+      - orchestrator/docs/tasks/**
+      - orchestrator/docs/decisions/**
+      - orchestrator/docs/policies/**
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - docs/design/**
+      - docs/harness/**
+      - docs/decisions/**
+      - docs/tasks/**
+      - docs/learnings.md
+      - orchestrator/docs/routing/**
+      - orchestrator/docs/tasks/**
+      - orchestrator/docs/decisions/**
+      - orchestrator/docs/policies/**
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [AGENTS.md, "**/AGENTS.md", CLAUDE.md, README.md, .github/copilot-instructions.md]
+    conditions:
+      - The destination is unmanaged and contains one unambiguous Harnessly managed block location.
+    ownership: managed-block
+    authorization: MODE_APPLY
+  - operation: modify
+    paths:
+      - AGENTS.md
+      - "**/AGENTS.md"
+      - CLAUDE.md
+      - DESIGN.md
+      - HARNESS.md
+      - orchestrator/AGENTS.md
+      - orchestrator/CLAUDE.md
+      - orchestrator/DESIGN.md
+      - orchestrator/HARNESS.md
+    conditions:
+      - The destination has the matching setup-workspace provenance marker and unchanged assessed digest.
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [orchestrator/projects.yaml]
+    ownership: structural-merge
+    authorization: MODE_APPLY
+  - operation: execute
+    paths: []
+    commands: [project.verify]
+    conditions:
+      - The command satisfies the restricted shell.verify execution envelope.
+    ownership: none
+    authorization: MODE_APPLY
+requires: []
+verification:
+  - All registered paths resolve inside the authorized workspace.
+  - No product source or repository is copied, moved, or nested.
+  - Existing unmanaged instructions are preserved.
+  - A second deterministic setup produces no additional managed changes.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

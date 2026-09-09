@@ -1,0 +1,15 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: document-system-design
+cases:
+  - id: evidence-labelled-design
+    fixture: js-ts-monorepo
+    mode: APPLY
+    parameters:
+      DEPTH: DEEP
+      DIAGRAMS: MERMAID
+    expectApplicability: APPLICABLE
+    allowedWrites: [DESIGN.md, docs/design/**]
+    invariants:
+      - Every factual unit and edge cites a repository path.
+      - Inferences and unknowns are labelled.
+      - No private topology or secret value is added.

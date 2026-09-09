@@ -1,0 +1,112 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-010
+slug: audit-dependency-integrity
+version: 0.1.0
+status: beta
+title: Audit dependency and lockfile integrity
+summary: Reconcile manifests, lockfiles, managers, wrappers, registries, restore commands, lifecycle scripts, advisories, and reproducibility across project units.
+category: security
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/audit-dependency-integrity.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Repository or registered workspace root.
+  - name: NETWORK
+    type: enum
+    required: false
+    default: DENY
+    values: [DENY, PUBLIC_READ]
+    description: Deny network or permit public advisory metadata reads.
+  - name: VULNERABILITY_SCAN
+    type: enum
+    required: false
+    default: OFF
+    values: [OFF, NATIVE]
+    description: Run only an already available ecosystem-native audit.
+  - name: UPDATE_POLICY
+    type: enum
+    required: false
+    default: NONE
+    values: [NONE, LOCKFILE_REPAIR, PATCH_ONLY]
+    description: Audit only or propose narrowly gated reproducibility changes.
+applicability:
+  signals:
+    - At least one project unit declares managed dependencies or tool wrappers.
+  notApplicableWhen:
+    - The target uses no package manager, dependency manifest, lockfile, or wrapper.
+capabilities:
+  assess: [fs.read, git.read, shell.readonly]
+  apply: [fs.read, git.read, format.parse, shell.readonly, fs.write-declared, shell.verify, network.public-read, dependency.modify]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths: [docs/harness/dependency-integrity.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [docs/harness/dependency-integrity.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: install
+    paths:
+      - "**/package.json"
+      - "**/package-lock.json"
+      - "**/pnpm-lock.yaml"
+      - "**/yarn.lock"
+      - "**/bun.lock"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - "**/poetry.lock"
+      - "**/requirements*.txt"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "**/pom.xml"
+      - "**/gradle-wrapper.properties"
+      - "**/*.csproj"
+      - "**/packages.lock.json"
+    ownership: structural-merge
+    authorization: HUMAN_GATE
+  - operation: install
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+    conditions:
+      - The exact dependency declaration and lifecycle behavior are reviewed in the gate.
+    ownership: source-patch
+    authorization: HUMAN_GATE
+  - operation: execute
+    paths: []
+    commands: [dependency.validate-offline]
+    conditions:
+      - The validator executes no lifecycle scripts and satisfies the restricted shell.verify envelope.
+    ownership: none
+    authorization: MODE_APPLY
+  - operation: network-read
+    paths: []
+    commands: [advisory.lookup-by-id]
+    conditions:
+      - The request is an unauthenticated public GET by known advisory ID and transmits no dependency graph or private package name.
+    ownership: none
+    authorization: HUMAN_GATE
+requires: [inventory-workspace, establish-quality-gates]
+verification:
+  - Each dependency unit uses one evidenced manager and expected lock strategy.
+  - Frozen or locked restore is documented and tested only when authorized.
+  - Lifecycle scripts and non-default registries are surfaced without exposing credentials.
+  - Advisory results record source and observation time and are not treated as exhaustive.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

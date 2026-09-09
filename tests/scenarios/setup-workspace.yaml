@@ -1,0 +1,56 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: setup-workspace
+cases:
+  - id: standard-assess-read-only
+    fixture: js-ts-monorepo
+    mode: ASSESS
+    parameters:
+      PROFILE: STANDARD
+    expectApplicability: APPLICABLE
+    allowedWrites: []
+    invariants:
+      - Tree digest is unchanged.
+      - Root and package units are mapped separately.
+  - id: advanced-embedded-no-copy
+    fixture: python-api
+    mode: APPLY
+    parameters:
+      PROFILE: ADVANCED
+      TOPOLOGY: EMBEDDED
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - orchestrator/AGENTS.md
+      - orchestrator/CLAUDE.md
+      - orchestrator/DESIGN.md
+      - orchestrator/HARNESS.md
+      - orchestrator/projects.yaml
+      - orchestrator/.agents/skills/**
+      - orchestrator/docs/routing/**
+      - orchestrator/docs/tasks/**
+      - orchestrator/docs/decisions/**
+      - orchestrator/docs/policies/**
+    invariants:
+      - projects.yaml registers the host repository as ..
+      - No product source appears under orchestrator.
+      - Second deterministic render is unchanged.
+  - id: advanced-parent-siblings
+    fixture: multi-repo-workspace
+    mode: APPLY
+    parameters:
+      PROFILE: ADVANCED
+      TOPOLOGY: PARENT_HUB
+    expectApplicability: APPLICABLE
+    allowedWrites:
+      - orchestrator/AGENTS.md
+      - orchestrator/CLAUDE.md
+      - orchestrator/DESIGN.md
+      - orchestrator/HARNESS.md
+      - orchestrator/projects.yaml
+      - orchestrator/.agents/skills/**
+      - orchestrator/docs/routing/**
+      - orchestrator/docs/tasks/**
+      - orchestrator/docs/decisions/**
+      - orchestrator/docs/policies/**
+    invariants:
+      - Only selected sibling paths are registered.
+      - No repository is copied or moved.

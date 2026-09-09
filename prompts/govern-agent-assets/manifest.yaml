@@ -1,0 +1,92 @@
+schemaVersion: harnessly.dev/prompt/v1
+id: HLY-003
+slug: govern-agent-assets
+version: 0.1.0
+status: beta
+title: Govern agent instructions and reusable assets
+summary: Audit and reconcile portable instructions, rules, skills, prompt files, and agent profiles without creating competing sources of truth.
+category: documentation
+entrypoint: PROMPT.md
+guide: ../../docs/prompts/govern-agent-assets.md
+modes:
+  default: ASSESS
+  supported:
+    - ASSESS
+    - APPLY
+parameters:
+  - name: TARGET_ROOT
+    type: path
+    required: false
+    default: .
+    description: Repository or orchestrator root to inspect.
+  - name: TARGET_AGENTS
+    type: string-list
+    required: false
+    default: [AUTO]
+    description: Agent hosts whose native files may be created.
+  - name: STRATEGY
+    type: enum
+    required: false
+    default: AUDIT
+    values: [AUDIT, CANONICALIZE]
+    description: Report conflicts or create a portable canonical source with adapters.
+  - name: PRESERVE_EXISTING
+    type: boolean
+    required: false
+    default: true
+    description: Preserve all unmanaged instructions and customizations.
+applicability:
+  signals:
+    - A repository uses or intends to use coding-agent instructions or reusable workflows.
+  notApplicableWhen:
+    - The selected target explicitly forbids repository-level agent configuration.
+capabilities:
+  assess: [fs.read, git.read]
+  apply: [fs.read, git.read, fs.write-declared]
+risk:
+  assess: R0
+  apply: R2
+  ceiling: R3
+effects:
+  - operation: create
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - .agents/skills/**
+      - .claude/skills/**
+      - .claude/agents/**
+      - .cursor/rules/**
+      - .github/copilot-instructions.md
+      - .github/prompts/**
+      - .github/agents/**
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: create
+    paths: ["**/AGENTS.md"]
+    conditions:
+      - Only a discovered package or project root outside generated, vendored, dependency, cache, and VCS paths is eligible.
+    ownership: create-only
+    authorization: MODE_APPLY
+  - operation: create
+    paths: [docs/design/agent-assets.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [AGENTS.md, "**/AGENTS.md", CLAUDE.md, .cursor/rules/**, .github/copilot-instructions.md]
+    conditions:
+      - Nested instruction files are limited to discovered package or project roots outside generated/vendor paths.
+    ownership: managed-block
+    authorization: MODE_APPLY
+  - operation: modify
+    paths: [.claude/skills/**, .claude/agents/**, .github/prompts/**, .github/agents/**, docs/design/agent-assets.md]
+    ownership: owned-file
+    authorization: MODE_APPLY
+requires: [inventory-workspace]
+verification:
+  - Every discovered agent asset is indexed with host, scope, and precedence.
+  - Portable guidance has one canonical source.
+  - Native adapters do not widen permissions or contradict the canonical source.
+  - Existing unmanaged instructions remain intact.
+compatibility:
+  portableCore: markdown
+  adapters: [agents-md, agent-skills, cursor, claude-code, github-copilot, generic]

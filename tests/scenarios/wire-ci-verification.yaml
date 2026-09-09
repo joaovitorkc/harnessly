@@ -1,0 +1,16 @@
+schemaVersion: harnessly.dev/scenarios/v1
+workflow: wire-ci-verification
+cases:
+  - id: github-read-only-verification
+    fixture: js-ts-monorepo
+    mode: APPLY
+    parameters:
+      PROVIDER: GITHUB_ACTIONS
+      TRIGGERS: [pull_request, push]
+    expectApplicability: APPLICABLE
+    allowedWrites: [.github/workflows/verify.yml, docs/harness/ci.md]
+    invariants:
+      - CI calls the canonical local sensor.
+      - Permissions are read-only.
+      - Third-party actions use full commit SHAs.
+      - No deploy, release, secret, or production step is added.
