@@ -1,31 +1,36 @@
-<p align="center">
-  <img src="./assets/harnessly-hero.svg" alt="Harnessly — map first, change with confidence" width="100%">
-</p>
+> [!NOTE]
+> **Harnessly is in public preview.** The repository is live; the first tagged
+> release is still being prepared. The starter below uses `main` only for a
+> read-only assessment. If you approve in the same chat, the agent reuses the
+> exact workflow it already loaded instead of downloading it again.
+
+<div align="center">
 
 # Harnessly
 
-**Give your coding agent the context, guardrails, and checks your project
-actually needs — without rebuilding the project around a new tool.**
+### Turn an existing repository into a place where coding agents can work without guessing.
 
-Harnessly looks at the repository first, shows you a concrete plan, and waits
-for your approval before changing anything. It works through plain Markdown
-with Cursor, Claude Code, GitHub Copilot, and other coding agents.
+Harnessly maps the project, proposes the right engineering harness, and waits
+for your approval before changing files.
 
-[Português](./README.pt-BR.md) · [Start here](./docs/quickstart.md) ·
-[Workflow catalog](./docs/prompts/README.md) · [Security](./SECURITY.md)
+**Map first. Approve the plan. Change with evidence.**
 
-> **Development preview (`0.1.0-beta.1`):** the public repository and release
-> are not live yet. The ready-to-copy URL below will work after publication.
-> Until then, use the local
-> [`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md).
+[Start in 30 seconds](#start-with-harnessly) ·
+[What is Harnessly?](#what-is-harnessly) ·
+[Workflow catalog](./docs/prompts/README.md) ·
+[Português](./README.pt-BR.md)
 
-## Start in about 30 seconds
+</div>
+
+---
+
+## Start with Harnessly
 
 No CLI. No package to install. Open your coding agent **in the project you want
 to prepare**, copy this message, and send it:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Analyze this project and show me the setup you recommend. Do not change anything yet.
 ```
 
@@ -43,13 +48,63 @@ already assessed.
 Want an `orchestrator/` for several repositories? Change only the second line:
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 I want the advanced setup with an orchestrator folder. Analyze first and do not change anything yet.
 ```
 
 If your agent cannot open URLs, open or paste the local
 [`PROMPT.md`](./prompts/setup-workspace/PROMPT.md), then send the same
 plain-language request.
+
+> [!TIP]
+> **Coding agents and LLMs:** start at [`AGENTS.md`](./AGENTS.md) for the
+> repository map and operating rules. Maintainers should use
+> [`HARNESS.md`](./HARNESS.md) for the verification path.
+
+## Contents
+
+- [What is Harnessly?](#what-is-harnessly)
+- [What it adds](#what-it-adds)
+- [The two choices](#the-two-choices-in-plain-english)
+- [Why it is safer](#why-it-is-safer-than-a-generic-setup-prompt)
+- [Initial catalog](#initial-catalog)
+- [Supported project signals](#supported-project-signals)
+- [Compatibility](#compatibility)
+- [Repository layout](#repository-layout)
+- [Safety boundary](#safety-boundary)
+- [Contributing](#contributing)
+- [Licensing](#licensing)
+
+## What is Harnessly?
+
+Harnessly is a Markdown-first toolkit of engineering workflows for coding
+agents. You give a workflow to the agent you already use; Harnessly gives that
+agent a repeatable way to inspect the repository, explain what is missing, and
+make only the changes you approve.
+
+The result is a project-specific **harness**: the small set of instructions,
+system docs, package maps, quality gates, local checks, and safety boundaries
+that helps an agent work with the project instead of improvising around it.
+
+Harnessly does not force a framework or assume every repository needs the same
+setup. It follows evidence. A monorepo can receive scoped package guidance; a
+static landing page can correctly return `N/A` for server rate limiting; an
+unknown tool remains an explicit unknown.
+
+It is not an AI model, agent runtime, SaaS service, or replacement for the
+coding agent. It is the engineering layer that makes work done through those
+agents easier to understand, verify, and repeat.
+
+<details>
+<summary><strong>Why does Harnessly exist?</strong></summary>
+
+Coding agents can read a large amount of code, but they usually enter a new
+repository without the team's mental model: which commands are trustworthy,
+where boundaries live, what must never be touched, and what “done” means.
+Harnessly turns that missing context into maintained repository artifacts and
+verifiable workflows.
+
+</details>
 
 ## What it adds
 

@@ -122,7 +122,8 @@ Return:
 5. native adapters proposed for each selected agent;
 6. checks that would run after apply;
 7. gates, unknowns, and unverified items;
-8. an exact next invocation using `MODE=APPLY` and the resolved parameters.
+8. one ready-to-copy approval message for the same chat in plain language,
+   with the resolved choices but no URL or version placeholder.
 
 The plan must be minimal. Do not propose a database document for a static site,
 UI rules for a backend-only service, or package-level files that repeat root

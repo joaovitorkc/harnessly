@@ -1,32 +1,36 @@
-<p align="center">
-  <img src="./assets/harnessly-hero.svg" alt="Harnessly — primeiro mapeia, depois muda com confiança" width="100%">
-</p>
+> [!NOTE]
+> **O Harnessly está em preview público.** O repositório já está no ar; o
+> primeiro release com tag ainda está sendo preparado. O início abaixo usa a
+> `main` somente para análise sem alterações. Se você autorizar no mesmo chat,
+> a IA reutiliza exatamente o workflow já carregado, sem baixar de novo.
+
+<div align="center">
 
 # Harnessly
 
-**Dê à sua IA o contexto, os limites e as verificações que o projeto realmente
-precisa — sem reconstruir tudo em volta de uma ferramenta nova.**
+### Transforme um repositório existente em um lugar onde agentes de programação trabalham sem chutar.
 
-O Harnessly olha o repositório primeiro, mostra um plano concreto e espera sua
-autorização antes de alterar qualquer coisa. Funciona com Markdown puro no
-Cursor, Claude Code, GitHub Copilot e outros agentes de programação.
+O Harnessly mapeia o projeto, propõe o harness de engenharia certo e espera sua
+autorização antes de alterar arquivos.
 
-[English](./README.md) · [Comece aqui](./docs/quickstart.pt-BR.md) ·
-[Catálogo de workflows](./docs/prompts/README.md) · [Segurança](./SECURITY.md)
+**Primeiro mapeia. Você aprova. Depois muda com evidência.**
 
-> **Preview de desenvolvimento (`0.1.0-beta.1`):** o repositório público e o
-> release ainda não estão no ar. A mensagem pronta abaixo funcionará depois da
-> publicação. Até lá, use o
-> [`prompts/setup-workspace/PROMPT.md`](./prompts/setup-workspace/PROMPT.md)
-> local.
+[Comece em 30 segundos](#comece-com-o-harnessly) ·
+[O que é o Harnessly?](#o-que-é-o-harnessly) ·
+[Catálogo de workflows](./docs/prompts/README.md) ·
+[English](./README.md)
 
-## Comece em uns 30 segundos
+</div>
+
+---
+
+## Comece com o Harnessly
 
 Não tem CLI nem pacote para instalar. Abra sua IA **dentro do projeto que você
 quer preparar**, copie esta mensagem e envie:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
 ```
 
@@ -45,13 +49,64 @@ Quer um `orchestrator/` para organizar vários repositórios? Troque apenas a
 segunda linha:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
 ```
 
 Se sua IA não abre URLs, abra ou cole o
 [`PROMPT.md`](./prompts/setup-workspace/PROMPT.md) local e mande o mesmo pedido
 em linguagem normal.
+
+> [!TIP]
+> **Agentes de programação e LLMs:** comecem pelo
+> [`AGENTS.md`](./AGENTS.md), que traz o mapa e as regras do repositório. Quem
+> mantém o Harnessly encontra o caminho de validação no
+> [`HARNESS.md`](./HARNESS.md).
+
+## Conteúdo
+
+- [O que é o Harnessly?](#o-que-é-o-harnessly)
+- [O que ele coloca no projeto](#o-que-ele-coloca-no-projeto)
+- [As duas escolhas](#as-duas-escolhas-sem-complicar)
+- [Por que ele é mais seguro](#por-que-não-é-só-mais-um-prompt-genérico)
+- [O que a v0.1 cobre](#o-que-a-v01-cobre)
+- [Escalabilidade sem chute](#escalabilidade-sem-chute)
+- [Compatibilidade](#compatibilidade-honesta)
+- [Segurança](#segurança)
+- [Desenvolvimento](#desenvolvendo-o-harnessly)
+- [Licenças](#licenças)
+
+## O que é o Harnessly?
+
+O Harnessly é um toolkit Markdown-first de workflows de engenharia para
+agentes de programação. Você entrega um workflow para a IA que já usa; o
+Harnessly dá a ela uma forma repetível de analisar o repositório, explicar o
+que está faltando e fazer somente as mudanças que você aprovar.
+
+O resultado é um **harness específico para o projeto**: um conjunto enxuto de
+instruções, documentação do sistema, mapas de pacotes, gates de qualidade,
+verificações locais e limites de segurança que evita que a IA improvise em
+volta do seu código.
+
+O Harnessly não força framework nem presume que todo repositório precisa do
+mesmo setup. Ele segue evidências. Um monorepo pode receber orientação por
+pacote; uma landing estática pode retornar `N/A` para rate limit de servidor;
+uma ferramenta desconhecida continua marcada como dúvida.
+
+Ele não é uma IA, runtime de agente, SaaS ou substituto para Cursor, Claude
+Code, Copilot e similares. É a camada de engenharia que torna o trabalho feito
+por esses agentes mais fácil de entender, verificar e repetir.
+
+<details>
+<summary><strong>Por que o Harnessly existe?</strong></summary>
+
+Agentes conseguem ler muito código, mas normalmente entram em um repositório
+sem o mapa mental do time: quais comandos são confiáveis, onde ficam os
+limites, o que não pode ser tocado e o que significa “terminado”. O Harnessly
+transforma esse contexto ausente em artefatos mantidos no próprio repositório
+e workflows verificáveis.
+
+</details>
 
 ## O que ele coloca no projeto
 

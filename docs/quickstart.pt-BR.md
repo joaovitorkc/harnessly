@@ -1,9 +1,8 @@
 # Início rápido
 
-> **Preview de desenvolvimento:** o release público `v0.1.0-beta.1` ainda não
-> está no ar. Para testar localmente, abra
-> [`../prompts/setup-workspace/PROMPT.md`](../prompts/setup-workspace/PROMPT.md)
-> no lugar da URL abaixo.
+> **Preview público:** o repositório já está no ar; o primeiro release com tag
+> ainda está sendo preparado. A URL abaixo usa a `main` para análise sem
+> alterações. Aplique no mesmo chat para reutilizar o workflow já carregado.
 
 O Harnessly é um conjunto de workflows em Markdown. Você não instala nada no
 projeto.
@@ -17,7 +16,7 @@ projeto.
 ### 2. Envie esta mensagem
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Analise este projeto e me mostre o setup que você recomenda. Não altere nada ainda.
 ```
 
@@ -43,7 +42,7 @@ Não cole a URL outra vez para aplicar.
 Use esta primeira mensagem:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Quero o setup avançado com uma pasta orchestrator. Primeiro analise e não altere nada ainda.
 ```
 
@@ -62,7 +61,7 @@ workspace/
 Escolha um workflow no [catálogo](./prompts/README.md). Por exemplo:
 
 ```text
-Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/harden-http-rate-limits/PROMPT.md
+Leia https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/harden-http-rate-limits/PROMPT.md
 Veja se este projeto precisa de rate limit. Mostre o plano e não altere nada ainda.
 ```
 

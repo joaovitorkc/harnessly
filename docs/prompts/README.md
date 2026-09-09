@@ -6,7 +6,7 @@ Use [`setup-workspace`](./setup-workspace.md). It maps the whole project and
 recommends only the next steps that fit.
 
 ```text
-Read https://raw.githubusercontent.com/joaovitorkc/harnessly/v0.1.0-beta.1/prompts/setup-workspace/PROMPT.md
+Read https://raw.githubusercontent.com/joaovitorkc/harnessly/main/prompts/setup-workspace/PROMPT.md
 Analyze this project and show me the setup you recommend. Do not change anything yet.
 ```
 

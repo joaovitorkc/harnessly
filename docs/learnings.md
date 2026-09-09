@@ -2,6 +2,9 @@
 
 Short durable corrections only:
 
+- ❌ Use decorative “AI-looking” artwork as the README identity -> ✅ prefer
+  restrained native GitHub typography, a clear product statement, and
+  `What is Harnessly?` before technical detail.
 - ❌ Start with tag/SHA placeholders and contract jargon -> ✅ give users one
   ready-to-copy assessment command, then let them approve in plain language in
   the same chat.
