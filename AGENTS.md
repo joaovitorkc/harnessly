@@ -23,7 +23,7 @@ toolkit. It has no login, tenant, web/API service, database, or runtime ports.
 | `contracts/v1/` | Schemas, modes, risks, results, preservation |
 | `profiles/` | Standard and Advanced placement policy |
 | `templates/` | Project-specific output shapes; never product code |
-| `.agents/skills/` | Portable maintainer workflows |
+| `.agents/skills/` | Canonical maintainer workflows (mirrors: `.cursor/skills/`, `.claude/skills/`) |
 | `agents/` | Canonical specialist-agent definitions |
 | `tools/` | Deterministic maintainer validation/release scripts |
 | `tests/` | Synthetic fixtures, invariant scenarios, observed evals |
